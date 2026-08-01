@@ -9,28 +9,38 @@ import {
 } from "recharts";
 
 import weeklyActivityData from "../../config/weeklyActivityData";
+import Card from "../common/Card";
 
 function WeeklyActivity() {
   return (
-    <div className="bg-[#111827] rounded-2xl border border-slate-800 p-6 shadow-lg hover:border-green-500/40 transition-all">
-
-      <div className="flex justify-between items-center mb-6">
-
-        <h2 className="text-xl font-semibold text-white">
-          📈 Weekly DSA Activity
-        </h2>
-
-        <span className="text-sm text-slate-400">
-          Problems Solved
-        </span>
-
-      </div>
-
+        <Card
+        title="📈 Weekly DSA Activity"
+        subtitle="Track the number of problems solved each day."
+        className="hover:border-green-500/40"
+        action={
+          <span className="text-sm text-slate-400">
+            Problems Solved
+          </span>
+        }
+        footer={
+          <p className="text-sm text-slate-400">
+            📚 Keep solving consistently to maintain your coding streak.
+          </p>
+        }
+      >
       <div className="h-72">
 
         <ResponsiveContainer width="100%" height="100%">
 
-          <LineChart data={weeklyActivityData}>
+          <LineChart
+            data={weeklyActivityData}
+            margin={{
+              top: 10,
+              right: 10,
+              left: -15,
+              bottom: 0,
+            }}
+          >
 
             <defs>
 
@@ -41,8 +51,16 @@ function WeeklyActivity() {
                 x2="1"
                 y2="0"
               >
-                <stop offset="0%" stopColor="#22C55E" />
-                <stop offset="100%" stopColor="#3B82F6" />
+                <stop
+                  offset="0%"
+                  stopColor="#22C55E"
+                />
+
+                <stop
+                  offset="100%"
+                  stopColor="#3B82F6"
+                />
+
               </linearGradient>
 
             </defs>
@@ -55,16 +73,25 @@ function WeeklyActivity() {
             <XAxis
               dataKey="day"
               stroke="#94A3B8"
+              tickLine={false}
+              axisLine={false}
             />
 
             <YAxis
               stroke="#94A3B8"
+              tickLine={false}
+              axisLine={false}
             />
 
             <Tooltip
+              cursor={{
+                stroke: "#22C55E",
+                strokeWidth: 1,
+                strokeDasharray: "5 5",
+              }}
               contentStyle={{
                 background: "#1E293B",
-                border: "none",
+                border: "1px solid #334155",
                 borderRadius: "12px",
                 color: "#fff",
               }}
@@ -75,12 +102,19 @@ function WeeklyActivity() {
               dataKey="solved"
               stroke="url(#lineGradient)"
               strokeWidth={4}
+              animationDuration={1500}
+              animationEasing="ease-out"
               dot={{
                 r: 5,
                 fill: "#22C55E",
+                strokeWidth: 2,
+                stroke: "#111827",
               }}
               activeDot={{
                 r: 8,
+                fill: "#3B82F6",
+                stroke: "#fff",
+                strokeWidth: 2,
               }}
             />
 
@@ -90,7 +124,7 @@ function WeeklyActivity() {
 
       </div>
 
-    </div>
+    </Card>
   );
 }
 

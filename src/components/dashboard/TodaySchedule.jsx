@@ -1,36 +1,43 @@
 import schedule from "../../config/todayScheduleData";
+import Card from "../common/Card";
 
 function TodaySchedule() {
   return (
-    <div
-      className="
-      bg-[#111827]
-      rounded-2xl
-      border
-      border-slate-800
-      p-6
-      shadow-lg
-      hover:border-blue-500/30
-      hover:shadow-blue-500/10
-      transition-all
-      duration-300
-      "
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white">
-         📅 Today's Schedule
-        </h2>
+          <Card
+        title="📅 Today's Schedule"
+        subtitle="Stay on track with today's planned tasks."
+        className="hover:border-blue-500/30"
+        action={
+          <div className="flex items-center gap-4">
 
-        <button className="text-sm text-blue-400 hover:text-blue-300 transition cursor-pointer">
-          View All
-        </button>
-      </div>
+            <span className="text-sm font-medium text-green-400">
+              4 / 6 Done
+            </span>
 
-      {/* Tasks */}
+            <button
+              className="
+              text-sm
+              text-blue-400
+              hover:text-blue-300
+              transition
+              cursor-pointer
+              "
+            >
+              View All
+            </button>
+
+          </div>
+        }
+        footer={
+          <p className="text-sm text-slate-400">
+            🎯 Complete your high-priority tasks first to stay productive.
+          </p>
+        }
+      >
       <div className="space-y-4">
 
         {schedule.map((task) => (
+
           <div
             key={task.id}
             className="
@@ -49,15 +56,15 @@ function TodaySchedule() {
             cursor-pointer
             "
           >
+
             {/* Left */}
+
             <div className="flex items-center gap-4">
 
-              {/* Priority Dot */}
               <span
                 className={`w-3 h-3 rounded-full ${task.priorityColor}`}
               />
 
-              {/* Task */}
               <div>
 
                 <h3 className="text-white font-medium">
@@ -90,6 +97,7 @@ function TodaySchedule() {
             </div>
 
             {/* Checkbox */}
+
             <input
               type="checkbox"
               defaultChecked={task.completed}
@@ -100,11 +108,16 @@ function TodaySchedule() {
               cursor-pointer
               "
             />
+
           </div>
+
         ))}
 
       </div>
-    </div>
+
+      
+
+    </Card>
   );
 }
 

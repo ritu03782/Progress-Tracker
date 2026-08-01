@@ -1,34 +1,33 @@
 import recentActivityData from "../../config/recentActivitiesData";
+import Card from "../common/Card";
 
 function RecentActivity() {
   return (
-    <div
-      className="
-      bg-[#111827]
-      rounded-2xl
-      border
-      border-slate-800
-      p-6
-      shadow-lg
-      hover:border-blue-500/30
-      hover:shadow-blue-500/10
-      transition-all
-      duration-300
-      "
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white">
-          🕒 Recent Activity
-        </h2>
-
-        <button className="text-sm text-blue-400 hover:text-blue-300 transition cursor-pointer">
-          View All
-        </button>
-      </div>
-
-      {/* Activities */}
+        <Card
+        title="🕒 Recent Activity"
+        subtitle="Latest updates from your preparation journey."
+        className="hover:border-blue-500/30"
+        action={
+          <button
+            className="
+            text-sm
+            text-blue-400
+            hover:text-blue-300
+            transition
+            cursor-pointer
+            "
+          >
+            View All
+          </button>
+        }
+        footer={
+          <p className="text-sm text-slate-400">
+            📌 Every completed task brings you one step closer to your placement goal.
+          </p>
+        }
+      >
       <div className="space-y-4">
+
         {recentActivityData.map((activity) => {
           const Icon = activity.icon;
 
@@ -51,35 +50,31 @@ function RecentActivity() {
               cursor-pointer
               "
             >
-              {/* Left Side */}
+              {/* Left */}
+
               <div className="flex items-center gap-4">
 
-                {/* Icon */}
-                <div className="relative">
-
-                  {/* Icon Circle */}
-                  <div
-                    className="
-                    w-12
-                    h-12
-                    rounded-full
-                    bg-slate-900
-                    flex
-                    items-center
-                    justify-center
-                    transition-all
-                    duration-300
-                    group-hover:scale-110
-                    "
-                  >
-                    <Icon
-                      className={`text-2xl ${activity.iconColor}`}
-                    />
-                  </div>
+                <div
+                  className="
+                  w-12
+                  h-12
+                  rounded-full
+                  bg-slate-900
+                  flex
+                  items-center
+                  justify-center
+                  transition-all
+                  duration-300
+                  group-hover:scale-110
+                  "
+                >
+                  <Icon
+                    className={`text-2xl ${activity.iconColor}`}
+                  />
                 </div>
 
-                {/* Title & Description */}
                 <div>
+
                   <h3 className="text-white font-medium">
                     {activity.title}
                   </h3>
@@ -87,19 +82,25 @@ function RecentActivity() {
                   <p className="text-sm text-slate-400 mt-1">
                     {activity.description}
                   </p>
+
                 </div>
 
               </div>
 
               {/* Time */}
+
               <span className="text-xs text-slate-500 whitespace-nowrap">
                 {activity.time}
               </span>
+
             </div>
           );
         })}
+
       </div>
-    </div>
+
+
+    </Card>
   );
 }
 

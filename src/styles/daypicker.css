@@ -1,0 +1,35 @@
+.rdp {
+  --rdp-accent-color: #3b82f6;
+  --rdp-background-color: #111827;
+
+  color: white;
+
+  margin: 0;
+}
+
+.rdp-day_selected {
+  background: #2563eb !important;
+  color: white !important;
+  border-radius: 9999px;
+}
+
+.rdp-day_today {
+  border: 2px solid #3b82f6;
+  border-radius: 9999px;
+}
+
+.rdp-day:hover {
+  background: #1e293b;
+}
+
+.rdp-caption_label {
+  color: white;
+}
+
+.rdp-head_cell {
+  color: #94a3b8;
+}
+
+.rdp-button {
+  color: white;
+}
