@@ -39,7 +39,7 @@ function DateNavigator() {
   }, []);
 
   return (
-    <div className="flex justify-center mb-8">
+    <div className="flex justify-center mb-8 ">
 
       <div
         className="
@@ -50,7 +50,7 @@ function DateNavigator() {
         items-center
         justify-between
         rounded-2xl
-        bg-[#111827]
+        bg-slate-950
         border
         border-slate-800
         p-2
