@@ -1,24 +1,10 @@
 import { useState } from "react";
-import {
-  ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-} from "recharts";
-
 import progressData from "../../config/progressData";
 import Card from "../common/Card";
+import ProgressRing from "../common/ProgressRing";
 
 function ProgressChart() {
   const [view, setView] = useState("Week");
-
-  const chartData = [
-    {
-      name: "Overall",
-      value: progressData.overall,
-      fill: "#3B82F6",
-    },
-  ];
 
   return (
     <Card
@@ -76,50 +62,17 @@ function ProgressChart() {
       }
     >
       {/* Left */}
-
-      <div className="relative w-56 h-56 xl:w-60 xl:h-60 flex-shrink:0">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadialBarChart
-            data={chartData}
-            innerRadius="72%"
-            outerRadius="92%"
-            startAngle={90}
-            endAngle={-270}
-          >
-            <PolarAngleAxis
-              type="number"
-              domain={[0, 100]}
-              tick={false}
-            />
-
-            <RadialBar
-              dataKey="value"
-              background={{ fill: "#1E293B" }}
-              cornerRadius={20}
-              animationBegin={300}
-              animationDuration={1800}
-              animationEasing="ease-out"
-            />
-          </RadialBarChart>
-        </ResponsiveContainer>
-
-        <div
-          className="
-            absolute
-            inset-0
-            flex
-            flex-col
-            items-center
-            justify-center
-          "
-        >
+      <ProgressRing
+        value={progressData.overall}
+        color="#3B82F6"
+        className="w-56 h-56 xl:w-60 xl:h-60 flex-shrink:0"
+      >
+        <div className="flex flex-col items-center justify-center">
           <h2 className="text-5xl font-bold text-white">
             {progressData.overall}%
           </h2>
 
-          <p className="text-slate-400 mt-1">
-            Overall Progress
-          </p>
+          <p className="text-slate-400 mt-1">Overall Progress</p>
 
           <span
             className="
@@ -135,10 +88,9 @@ function ProgressChart() {
             🚀 On Track
           </span>
         </div>
-      </div>
+      </ProgressRing>
 
       {/* Right */}
-
       <div className="flex-1 w-full">
         <div className="space-y-5">
           {progressData.subjects.map((subject) => (
@@ -147,35 +99,21 @@ function ProgressChart() {
                 <div className="flex items-center gap-3">
                   <span
                     className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: subject.color,
-                    }}
+                    style={{ backgroundColor: subject.color }}
                   />
-
                   <span className="text-slate-200 font-medium">
                     {subject.name}
                   </span>
                 </div>
 
-                <span
-                  className="font-semibold"
-                  style={{
-                    color: subject.color,
-                  }}
-                >
+                <span className="font-semibold" style={{ color: subject.color }}>
                   {subject.progress}%
                 </span>
               </div>
 
               <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className="
-                    h-full
-                    rounded-full
-                    transition-all
-                    duration-1000
-                    hover:brightness-125
-                  "
+                  className="h-full rounded-full transition-all duration-1000 hover:brightness-125"
                   style={{
                     width: `${subject.progress}%`,
                     background: `linear-gradient(90deg, ${subject.color}, #60A5FA)`,

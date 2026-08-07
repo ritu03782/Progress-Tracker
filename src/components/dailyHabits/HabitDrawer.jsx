@@ -48,7 +48,7 @@ function HabitDrawer({
           top-0
           right-0
           h-screen
-          w-[107.5
+          w-[107.5]
           bg-[#0F172A]
           border-l
           border-slate-800
