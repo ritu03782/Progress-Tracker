@@ -1,16 +1,152 @@
 # React + Vite
+# Progress Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Progress Tracker is a personal productivity and placement-preparation web application built using React, Tailwind CSS, and Vite.
 
-Currently, two official plugins are available:
+The application is designed to help students organize and track their DSA preparation, subjects, daily habits, goals, projects, job applications, and coding contests from a single platform.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> Project Status: Frontend development is currently in progress. Backend and API integration are planned for the next phase.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Dashboard
 
-## Expanding the ESLint configuration
+- Overall progress overview
+- Today's schedule
+- Weekly activity
+- Recent activity
+- Progress statistics
+- Quick overview of important tasks
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### DSA Tracker
+
+- Track solved DSA problems
+- Filter problems by difficulty, status, platform, and topic
+- Favourite questions
+- Topic-wise progress
+- Weak topic identification
+- Revision queue
+- Platform statistics
+
+### Subject Tracker
+
+- Track academic subjects
+- Topic-wise completion
+- Overall subject progress
+- Study hours
+- Weak topics
+- Study notes
+- Learning resources
+- Subject details through an interactive side panel
+
+### Daily Habits
+
+- Create and manage habits
+- Mark habits as completed
+- Track daily consistency
+- Track habit streaks
+- View habit completion statistics
+- Yearly consistency heatmap
+- Daily notes and reflections
+
+### Goals
+
+- Create and manage long-term goals
+- Track goal progress
+- Associate scheduled tasks with goals
+- View active and completed goals
+- View detailed goal information through a side panel
+
+### Project Tracker
+
+- Track personal and academic projects
+- Project progress
+- Project tasks
+- Project status
+- Technology stack
+- GitHub repository links
+- Project notes
+- Project details through an interactive side panel
+
+### Applications
+
+- Track job and internship applications
+- Monitor application status
+- Organize companies and roles
+- Track application progress
+
+### Contests
+
+- Track coding contests
+- Organize upcoming and completed contests
+- Monitor contest participation
+
+## Tech Stack
+
+### Frontend
+
+- React.js
+- JavaScript
+- Vite
+- Tailwind CSS
+- React Router DOM
+
+### Libraries
+
+- React Icons
+- Recharts
+- date-fns
+
+### Current Data Storage
+
+- Local Storage
+
+### Planned
+
+- Backend API
+- Database
+- User authentication
+- Cloud data storage
+
+## Project Structure
+
+```text
+src/
+│
+├── assets/
+│
+├── components/
+│   ├── common/
+│   │   ├── Button.jsx
+│   │   ├── Card.jsx
+│   │   ├── Header.jsx
+│   │   └── ProgressBar.jsx
+│   │
+│   ├── dsa/
+│   ├── habits/
+│   ├── subjects/
+│   ├── goals/
+│   ├── projects/
+│   ├── applications/
+│   └── contests/
+│
+├── config/
+│
+├── pages/
+│   ├── Dashboard.jsx
+│   ├── DailyHabits.jsx
+│   ├── DsaTracker.jsx
+│   ├── Subjects.jsx
+│   ├── Goals.jsx
+│   ├── Projects.jsx
+│   ├── Applications.jsx
+│   └── Contests.jsx
+│
+├── services/
+│   └── habitService.js
+│
+├── utils/
+│
+├── App.jsx
+├── main.jsx
+└── index.css
