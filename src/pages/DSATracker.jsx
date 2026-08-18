@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import PageHeader from "../components/common/PageHeader";
+import Modal from "../components/common/Modal";
 import FilterBar from "../components/common/filters/FilterBar";
 import StatsRow from "../components/dsa/StatsRow";
 import ProblemsTable from "../components/dsa/ProblemsTable";
@@ -8,25 +9,26 @@ import TopicProgress from "../components/dsa/TopicProgress";
 import PlatformStats from "../components/dsa/PlatformStats";
 import WeakTopics from "../components/dsa/WeakTopics";
 import RevisionQueue from "../components/dsa/RevisionQueue";
+import AddProblemForm from "../components/dsa/AddProblemForm";
 import { FaCode } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
 import Button from "../components/common/Button";
 
-import dsaProblemsData from "../config/dsaProblems";
+import useProblems from "../hooks/useProblems";
 import favouriteQuestions from "../config/favouriteQuestions";
 import topicProgress from "../config/topicProgress";
 import weakTopics from "../config/weakTopics";
 import revisionQueueData from "../config/revisionQueue";
+import { TOPIC_OPTIONS, DIFFICULTY_OPTIONS, STATUS_OPTIONS } from "../config/dsaOptions";
+import { platformOptions } from "../utils/platformOptions";
 
-const TOPIC_OPTIONS = ["Arrays", "Linked List", "Sliding Window", "BFS", "DFS", "DP", "Design"];
-const DIFFICULTY_OPTIONS = ["Easy", "Medium", "Hard"];
-const STATUS_OPTIONS = ["Solved", "Attempted"];
-const PLATFORM_OPTIONS = ["LeetCode", "GeeksforGeeks", "Codeforces", "CodeChef"];
+const PLATFORM_OPTIONS = platformOptions.map((p) => p.label);
 
 function DSATracker() {
-  const [problems, setProblems] = useState(dsaProblemsData);
+  const { problems, loading, addProblem, toggleFavourite } = useProblems();
   const [revisionQueue, setRevisionQueue] = useState(revisionQueueData);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [topic, setTopic] = useState("");
@@ -53,12 +55,6 @@ function DSATracker() {
     setPlatform("");
   }
 
-  function handleToggleFavourite(id) {
-    setProblems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, favourite: !p.favourite } : p))
-    );
-  }
-
   function handleToggleRevisionItem(tab, id) {
     setRevisionQueue((prev) => ({
       ...prev,
@@ -66,6 +62,15 @@ function DSATracker() {
         item.id === id ? { ...item, checked: !item.checked } : item
       ),
     }));
+  }
+
+  const handleAddProblem = (problemDraft) => {
+    addProblem(problemDraft);
+    setIsAddOpen(false);
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-slate-400">Loading problems...</div>;
   }
 
   return (
@@ -76,6 +81,7 @@ function DSATracker() {
         subtitle="Track your coding interview preparation and improve every day."
         buttonText="Add Problem"
         buttonIcon={<FaPlus />}
+        onButtonClick={() => setIsAddOpen(true)}
       >
         <Button
           variant="secondary"
@@ -92,80 +98,47 @@ function DSATracker() {
         searchPlaceholder="Search problems..."
         onReset={handleResetFilters}
         filters={[
-          {
-            label: "All Topics",
-            value: topic,
-            onChange: (e) => setTopic(e.target.value),
-            options: TOPIC_OPTIONS,
-          },
-          {
-            label: "All Difficulties",
-            value: difficulty,
-            onChange: (e) => setDifficulty(e.target.value),
-            options: DIFFICULTY_OPTIONS,
-          },
-          {
-            label: "All Status",
-            value: status,
-            onChange: (e) => setStatus(e.target.value),
-            options: STATUS_OPTIONS,
-          },
-          {
-            label: "All Platforms",
-            value: platform,
-            onChange: (e) => setPlatform(e.target.value),
-            options: PLATFORM_OPTIONS,
-          },
+          { label: "All Topics", value: topic, onChange: (e) => setTopic(e.target.value), options: TOPIC_OPTIONS },
+          { label: "All Difficulties", value: difficulty, onChange: (e) => setDifficulty(e.target.value), options: DIFFICULTY_OPTIONS },
+          { label: "All Status", value: status, onChange: (e) => setStatus(e.target.value), options: STATUS_OPTIONS },
+          { label: "All Platforms", value: platform, onChange: (e) => setPlatform(e.target.value), options: PLATFORM_OPTIONS },
         ]}
       />
 
       <StatsRow />
 
-{/* Problems + Favourite */}
-<section className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
-  <div className="xl:col-span-8">
-    <ProblemsTable
-      problems={filteredProblems}
-      onToggleFavourite={handleToggleFavourite}
-      className="h-full"
-    />
-  </div>
+      <section className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="xl:col-span-8">
+          <ProblemsTable
+            problems={filteredProblems}
+            onToggleFavourite={toggleFavourite}
+            className="h-full"
+          />
+        </div>
 
-  <div className="xl:col-span-4">
-    <FavouriteQuestions
-      questions={favouriteQuestions}
-      className="h-full"
-    />
-  </div>
-</section>
+        <div className="xl:col-span-4">
+          <FavouriteQuestions questions={favouriteQuestions} className="h-full" />
+        </div>
+      </section>
 
-{/* Topic + Platform */}
-<section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
-  <TopicProgress
-    topics={topicProgress}
-    className="h-full"
-  />
+      <section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <TopicProgress topics={topicProgress} className="h-full" />
+        <PlatformStats className="h-full" />
+      </section>
 
-  <PlatformStats
-    className="h-full"
-  />
-</section>
+      <section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6 pb-10">
+        <WeakTopics topics={weakTopics} className="h-full" />
+        <RevisionQueue
+          queue={revisionQueue}
+          onToggleItem={handleToggleRevisionItem}
+          className="h-full"
+        />
+      </section>
 
-{/* Weak + Revision */}
-<section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6 pb-10">
-  <WeakTopics
-    topics={weakTopics}
-    className="h-full"
-  />
-
-  <RevisionQueue
-    queue={revisionQueue}
-    onToggleItem={handleToggleRevisionItem}
-    className="h-full"
-  />
-</section></div>
+      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Problem">
+        <AddProblemForm onSubmit={handleAddProblem} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
+    </div>
   );
 }
-
 export default DSATracker;
-

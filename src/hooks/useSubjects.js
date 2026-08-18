@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getSubjects, toggleSubjectTopic } from "../services/subjectsService";
+import { getSubjects, toggleSubjectTopic, createSubject } from "../services/subjectsService";
 
 function useSubjects() {
   const [subjects, setSubjects] = useState([]);
@@ -24,7 +24,6 @@ function useSubjects() {
   }, [fetchSubjects]);
 
   const toggleTopic = useCallback(async (subjectId, topicId) => {
-    // Optimistic update so the checkbox feels instant
     setSubjects((prev) =>
       prev.map((subject) =>
         subject.id !== subjectId
@@ -44,11 +43,16 @@ function useSubjects() {
       await toggleSubjectTopic(subjectId, topicId);
     } catch (err) {
       setError(err);
-      fetchSubjects(); // roll back to server truth on failure
+      fetchSubjects();
     }
   }, [fetchSubjects]);
 
-  return { subjects, loading, error, toggleTopic, refetch: fetchSubjects };
+  const addSubject = useCallback(async (subjectDraft) => {
+    setSubjects((prev) => [...prev, subjectDraft]);
+    await createSubject(subjectDraft);
+  }, []);
+
+  return { subjects, loading, error, toggleTopic, refetch: fetchSubjects, addSubject };
 }
 
 export default useSubjects;

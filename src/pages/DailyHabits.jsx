@@ -1,56 +1,57 @@
+import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import PageHeader from "../components/common/PageHeader";
+import Modal from "../components/common/Modal";
 import DateNavigator from "../components/dailyHabits/DateNavigator";
 import MotivationCard from "../components/dailyHabits/MotivationCard";
 import MissedTaskCard from "../components/dailyHabits/MissedTaskCard";
 import HabitGrid from "../components/dailyHabits/HabitGrid";
+import HabitDrawer from "../components/dailyHabits/HabitDrawer";
 import ConsistencyCalendar from "../components/dailyHabits/ConsistencyCalendar";
 import NotesCard from "../components/dailyHabits/NotesCard";
-import { FaPlus } from "react-icons/fa";
-import PageHeader from "../components/common/PageHeader";
-import { useState } from "react";
-import HabitDrawer from "../components/dailyHabits/HabitDrawer";
-function DailyHabits(){
-    const [selectedHabit, setSelectedHabit] = useState(null);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const openDrawer = (habit) => {
-    setSelectedHabit(habit);
-    setIsDrawerOpen(true);
-    };
+import AddHabitForm from "../components/dailyHabits/AddHabitForm";
+import useHabits from "../hooks/useHabits";
 
-    const closeDrawer = () => {
-    setIsDrawerOpen(false);
-    };
-    return <>
+function DailyHabits() {
+  const { habits, loading, addHabit } = useHabits();
+  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  const openDrawer = (habit) => { setSelectedHabit(habit); setIsDrawerOpen(true); };
+  const closeDrawer = () => setIsDrawerOpen(false);
+
+  const handleAddHabit = (habitDraft) => {
+    addHabit(habitDraft);
+    setIsAddOpen(false);
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-slate-400">Loading habits...</div>;
+  }
+
+  return (
     <div className="min-h-screen bg-[#0F172A] p-6 md:p-8 space-y-8 text-white">
-        <PageHeader
+      <PageHeader
         title="Daily Habits"
         subtitle="Build consistency, one day at a time."
         buttonText="Add Habit"
         buttonIcon={<FaPlus />}
-        onButtonClick={() => setOpen(true)}
-    />
+        onButtonClick={() => setIsAddOpen(true)}
+      />
 
-    <DateNavigator/>
+      <DateNavigator />
+      <MotivationCard completed={habits.filter((h) => h.completed).length} total={habits.length} />
+      <MissedTaskCard />
+      <HabitGrid habits={habits} onHabitClick={openDrawer} />
+      <HabitDrawer habit={selectedHabit} isOpen={isDrawerOpen} onClose={closeDrawer} />
+      <ConsistencyCalendar />
+      <NotesCard />
 
-    <MotivationCard
-  completed={2}
-  total={8}
-/>
-
-    <MissedTaskCard/>
-
-   <HabitGrid
-    onHabitClick={openDrawer}
-/>
-<HabitDrawer
-    habit={selectedHabit}
-    isOpen={isDrawerOpen}
-    onClose={closeDrawer}
-/>
-
-    <ConsistencyCalendar/>
-
-    <NotesCard/>
+      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Habit">
+        <AddHabitForm onSubmit={handleAddHabit} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
     </div>
-        </>
+  );
 }
 export default DailyHabits;

@@ -6,6 +6,7 @@ const schedule = [
     priority: "High",
     priorityColor: "bg-red-500",
     completed: false,
+    linkedGoal: { goalId: "leetcode-500", type: "counter", amount: 2 },
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ const schedule = [
     priority: "Medium",
     priorityColor: "bg-yellow-500",
     completed: true,
+    linkedGoal: null,
   },
   {
     id: 3,
@@ -22,6 +24,7 @@ const schedule = [
     priority: "High",
     priorityColor: "bg-red-500",
     completed: false,
+    linkedGoal: { goalId: "crack-10-lpa", type: "milestone", milestoneId: 8 },
   },
   {
     id: 4,
@@ -30,6 +33,7 @@ const schedule = [
     priority: "Low",
     priorityColor: "bg-green-500",
     completed: false,
+    linkedGoal: null,
   },
 ];
 

@@ -1,25 +1,25 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import PageHeader from "../components/common/PageHeader";
+import Modal from "../components/common/Modal";
 import SubjectsStatsBar from "../components/subjects/SubjectsStatsBar";
 import SubjectGrid from "../components/subjects/SubjectGrid";
 import NeedsAttention from "../components/subjects/NeedsAttention";
 import RecentlyStudied from "../components/subjects/RecentlyStudied";
 import SubjectDetails from "../components/subjects/SubjectDetails";
+import AddSubjectForm from "../components/subjects/AddSubjectForm";
 import useSubjects from "../hooks/useSubjects";
-import { useState } from "react";
 import { getOverallStats } from "../utils/subjectStats";
 
 function Subjects() {
-  const { subjects, loading, toggleTopic } = useSubjects();
+  const { subjects, loading, toggleTopic, addSubject } = useSubjects();
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId) || null;
   const stats = useMemo(() => getOverallStats(subjects), [subjects]);
 
-  // Built from live subject/topic state — always reflects current progress,
-  // ready to be swapped for a real activity-log endpoint later.
   const recentlyStudied = useMemo(() => {
     return subjects
       .map((subject) => {
@@ -38,6 +38,11 @@ function Subjects() {
   };
 
   const closeDrawer = () => setIsDrawerOpen(false);
+
+  const handleAddSubject = (subjectDraft) => {
+    addSubject(subjectDraft);
+    setIsAddOpen(false);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -62,9 +67,7 @@ function Subjects() {
         subtitle="Track your core subject preparation for placements."
         buttonText="Add Subject"
         buttonIcon={<FaPlus />}
-        onButtonClick={() => {
-          // Hook up to createSubject() from subjectsService once there's a form/backend
-        }}
+        onButtonClick={() => setIsAddOpen(true)}
       />
 
       <SubjectsStatsBar stats={stats} />
@@ -84,6 +87,10 @@ function Subjects() {
         onEditNotes={() => {}}
         onEditSubject={() => {}}
       />
+
+      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Subject">
+        <AddSubjectForm onSubmit={handleAddSubject} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
     </div>
   );
 }
