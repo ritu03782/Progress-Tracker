@@ -3,6 +3,6 @@ import { SiLeetcode, SiGeeksforgeeks, SiCodeforces, SiCodechef } from "react-ico
 export const platformOptions = [
   { label: "LeetCode", icon: SiLeetcode, color: "text-amber-500" },
   { label: "GeeksforGeeks", icon: SiGeeksforgeeks, color: "text-green-500" },
-  { label: "Codeforces", icon: SiCodeforces, color: "text-red-500" },
-  { label: "CodeChef", icon: SiCodechef, color: "text-yellow-600" },
+  { label: "Codeforces", icon: SiCodeforces, color: "text-blue-500" },
+  { label: "CodeChef", icon: SiCodechef, color: "text-amber-700" },
 ];
