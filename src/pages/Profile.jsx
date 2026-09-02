@@ -10,12 +10,27 @@ import EditProfileForm from "../components/profile/EditProfileForm";
 import useProfile from "../hooks/useProfile";
 
 function Profile() {
-  const { profile, loading, saveProfile } = useProfile();
+  const { profile, loading, saveProfile, saveAvatar } = useProfile();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const handleSave = (updates) => {
-    saveProfile(updates);
-    setIsEditOpen(false);
+  const handleSave = async (updates) => {
+    try {
+      await saveProfile(updates);
+      setIsEditOpen(false);
+    } catch {
+      // error toast already shown by useProfile; keep the modal open so
+      // the user can fix and retry without losing their edits
+    }
+  };
+
+  const handleAvatarChange = async (file) => {
+    setAvatarUploading(true);
+    try {
+      await saveAvatar(file);
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   if (loading || !profile) {
@@ -32,7 +47,12 @@ function Profile() {
         onButtonClick={() => setIsEditOpen(true)}
       />
 
-      <ProfileHeaderCard profile={profile} onEdit={() => setIsEditOpen(true)} />
+      <ProfileHeaderCard
+        profile={profile}
+        onEdit={() => setIsEditOpen(true)}
+        onAvatarChange={handleAvatarChange}
+        avatarUploading={avatarUploading}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PersonalInfoCard profile={profile} />

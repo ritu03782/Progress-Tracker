@@ -3,6 +3,7 @@ import {
   FaFire,
   FaCheckCircle,
   FaEdit,
+  FaTrash,
   FaCalendarAlt,
   FaStickyNote,
   FaBullseye,
@@ -13,9 +14,13 @@ import ProgressBar from "../common/ProgressBar";
 import Button from "../common/Button";
 
 function HabitDrawer({
-  habit={selectedHabit},
-  isOpen={isDrawerOpen},
-  onClose={closeDrawer},
+  habit,
+  isOpen,
+  onClose,
+  onMarkComplete,
+  onSkip,
+  onEdit,
+  onDelete,
 }) {
   if (!habit) return null;
 
@@ -449,6 +454,7 @@ function HabitDrawer({
             <Button
               variant="primary"
               className="w-full justify-center"
+              onClick={onMarkComplete}
             >
               ✔ Mark Complete
             </Button>
@@ -456,6 +462,7 @@ function HabitDrawer({
             <Button
               variant="secondary"
               className="w-full justify-center"
+              onClick={onSkip}
             >
               ⏭ Skip Today
             </Button>
@@ -463,10 +470,21 @@ function HabitDrawer({
             <Button
               variant="secondary"
               className="w-full justify-center"
+              onClick={onEdit}
             >
               <FaEdit />
 
               Edit Habit
+            </Button>
+
+            <Button
+              variant="secondary"
+              className="w-full justify-center border border-red-500/30 text-red-400 hover:bg-red-500/10"
+              onClick={onDelete}
+            >
+              <FaTrash />
+
+              Delete Habit
             </Button>
 
           </div>

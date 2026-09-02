@@ -1,5 +1,8 @@
 import {createBrowserRouter} from "react-router-dom";
 import Layout from "../components/layout/Layout";
+import { ProtectedRoute, PublicOnlyRoute } from "../components/layout/RouteGuards";
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
 import Dashboard from "../pages/Dashboard";
 import DailyHabits from "../pages/DailyHabits";
 import DSATracker from "../pages/DSATracker";
@@ -13,52 +16,70 @@ import Settings from "../pages/Settings";
 
 const router = createBrowserRouter([
     {
-        path:"/",
-        element:<Layout />,
+        element:<PublicOnlyRoute />,
         children:[
             {
-                index:true,
-                element:<Dashboard/>,
+                path:"/login",
+                element:<Login/>,
             },
             {
-                path:"dashboard",
-                element:<Dashboard/>,
+                path:"/signup",
+                element:<Signup/>,
             },
+        ],
+    },
+    {
+        element:<ProtectedRoute />,
+        children:[
             {
-                path:"daily-habits",
-                element:<DailyHabits/>,
-            },
-            {
-                path:"dsa",
-                element:<DSATracker/>,
-            },
-            {
-                path:"subjects",
-                element:<Subjects/>,
-            },
-            {
-                path:"goals",
-                element:<Goals/>,
-            },
-            {
-                path:"projects",
-                element:<Projects/>,
-            },
-            {
-                path:"applications",
-                element:<Applications/>,
-            },
-            {
-                path:"contests",
-                element:<Contests/>,
-            },
-            {
-                path:"profile",
-                element:<Profile/>,
-            },
-            {
-                path:"settings",
-                element:<Settings/>,
+                path:"/",
+                element:<Layout />,
+                children:[
+                    {
+                        index:true,
+                        element:<Dashboard/>,
+                    },
+                    {
+                        path:"dashboard",
+                        element:<Dashboard/>,
+                    },
+                    {
+                        path:"daily-habits",
+                        element:<DailyHabits/>,
+                    },
+                    {
+                        path:"dsa",
+                        element:<DSATracker/>,
+                    },
+                    {
+                        path:"subjects",
+                        element:<Subjects/>,
+                    },
+                    {
+                        path:"goals",
+                        element:<Goals/>,
+                    },
+                    {
+                        path:"projects",
+                        element:<Projects/>,
+                    },
+                    {
+                        path:"applications",
+                        element:<Applications/>,
+                    },
+                    {
+                        path:"contests",
+                        element:<Contests/>,
+                    },
+                    {
+                        path:"profile",
+                        element:<Profile/>,
+                    },
+                    {
+                        path:"settings",
+                        element:<Settings/>,
+                    },
+                ],
             },
         ],
     },

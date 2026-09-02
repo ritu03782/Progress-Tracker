@@ -15,7 +15,7 @@ function AccountInfoCard({ profile }) {
           </span>
         }
       />
-      <InfoRow label="Last Login" value={formatDateTime(profile.lastLogin)} />
+      <InfoRow label="Last Login" value={profile.lastLogin ? formatDateTime(profile.lastLogin) : "—"} />
       <InfoRow label="Account Type" value={profile.accountType} />
     </Card>
   );

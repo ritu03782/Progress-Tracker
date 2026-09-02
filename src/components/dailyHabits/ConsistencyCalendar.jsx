@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 
 import {
@@ -10,7 +10,7 @@ import Card from "../common/Card";
 import Button from "../common/Button";
 import ConsistencyCell from "../common/ConsistencyCell";
 
-import consistencyData from "../../config/consistencyData";
+import { getHabitHeatmap } from "../../services/habitsService";
 import generateHeatMap from "../../utils/generateHeatMap";
 
 
@@ -37,17 +37,26 @@ const COLUMN_WIDTH=CELL_SIZE+GAP;
 const currentYear=new Date().getFullYear();
 
 const [year,setYear]=useState(currentYear);
+const [records,setRecords]=useState([]);
+
+useEffect(()=>{
+  let active=true;
+  getHabitHeatmap(year)
+    .then((data)=>{ if(active) setRecords(data); })
+    .catch(()=>{ if(active) setRecords([]); });
+  return ()=>{ active=false; };
+},[year]);
 
 
 
 const heatMap=useMemo(()=>{
 
  return generateHeatMap(
-  consistencyData,
+  records,
   year
  );
 
-},[year]);
+},[records,year]);
 
 
 

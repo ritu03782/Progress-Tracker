@@ -4,13 +4,21 @@ import Button from "../common/Button";
 import { habitIconOptions } from "../../utils/iconOptions";
 import { inputClass } from "../../utils/formStyles";
 
-function AddHabitForm({ onSubmit, onCancel }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("General");
-  const [target, setTarget] = useState("");
-  const [reminder, setReminder] = useState("8:00 AM");
-  const [selectedIcon, setSelectedIcon] = useState(habitIconOptions[0]);
+// Same form for both "Add New Habit" and "Edit Habit" — pass an existing
+// `habit` to pre-fill and switch into edit mode.
+function AddHabitForm({ habit, onSubmit, onCancel }) {
+  const isEditMode = Boolean(habit);
+  const initialIcon = isEditMode
+    ? habitIconOptions.find((opt) => opt.label === habit.iconLabel) || habitIconOptions[0]
+    : habitIconOptions[0];
+
+  const [title, setTitle] = useState(habit?.title || "");
+  const [description, setDescription] = useState(habit?.description || "");
+  const [category, setCategory] = useState(habit?.category || "General");
+  const [target, setTarget] = useState(habit?.target || "");
+  const [reminder, setReminder] = useState(habit?.reminder || "8:00 AM");
+  const [notes, setNotes] = useState(habit?.notes || "");
+  const [selectedIcon, setSelectedIcon] = useState(initialIcon);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,6 +26,7 @@ function AddHabitForm({ onSubmit, onCancel }) {
 
     onSubmit({
       icon: selectedIcon.icon,
+      iconLabel: selectedIcon.label,
       title: title.trim(),
       description: description.trim() || "New habit",
       category,
@@ -27,7 +36,7 @@ function AddHabitForm({ onSubmit, onCancel }) {
       completionRate: 0,
       reminder,
       target: target.trim() || "1x / day",
-      notes: "",
+      notes: notes.trim(),
       skipReason: "",
       history: [false, false, false, false, false, false, false],
       color: selectedIcon.color,
@@ -58,6 +67,16 @@ function AddHabitForm({ onSubmit, onCancel }) {
         <input type="text" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="e.g. 30 minutes" className={inputClass} />
       </FormField>
 
+      <FormField label="Notes">
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Any extra notes for this habit..."
+          rows={3}
+          className={`${inputClass} resize-none`}
+        />
+      </FormField>
+
       <FormField label="Icon">
         <div className="grid grid-cols-4 gap-2">
           {habitIconOptions.map((opt) => {
@@ -79,7 +98,9 @@ function AddHabitForm({ onSubmit, onCancel }) {
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" className="flex-1 justify-center" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" variant="primary" className="flex-1 justify-center">Add Habit</Button>
+        <Button type="submit" variant="primary" className="flex-1 justify-center">
+          {isEditMode ? "Save Changes" : "Add Habit"}
+        </Button>
       </div>
     </form>
   );

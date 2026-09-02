@@ -3,7 +3,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 
-function MissedTask({ task }) {
+function MissedTask({ task, onReschedule, onIgnore }) {
   return (
     <div
       className="
@@ -50,6 +50,7 @@ function MissedTask({ task }) {
       <div className="flex gap-3 mt-5">
 
         <button
+          onClick={onReschedule}
           className="
           flex-1
           flex
@@ -64,6 +65,7 @@ function MissedTask({ task }) {
           text-green-400
           hover:bg-green-500/20
           transition
+          cursor-pointer
           "
         >
           <FaRedoAlt size={13} />
@@ -71,6 +73,7 @@ function MissedTask({ task }) {
         </button>
 
         <button
+          onClick={onIgnore}
           className="
           flex-1
           flex
@@ -85,6 +88,7 @@ function MissedTask({ task }) {
           text-slate-300
           hover:bg-slate-700
           transition
+          cursor-pointer
           "
         >
           <FaTimes size={13} />
