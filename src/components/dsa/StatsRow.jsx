@@ -1,11 +1,10 @@
 import Card from "../common/Card";
-import dsaStats from "../../config/dsaStats";
 import { FaArrowUp } from "react-icons/fa";
 
-function StatsRow() {
+function StatsRow({ stats = [] }) {
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
-      {dsaStats.map((item) => {
+      {stats.map((item) => {
         const Icon = item.icon;
         return (
           <Card key={item.id} padding="p-5" className="cursor-pointer">

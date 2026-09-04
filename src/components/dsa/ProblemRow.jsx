@@ -1,7 +1,7 @@
-import { FaStar, FaRegStar } from "react-icons/fa";
+import { FaStar, FaRegStar, FaTrash } from "react-icons/fa";
 import { getDifficultyClass, getStatusClass } from "../../utils/difficultyStyles";
 
-function ProblemRow({ problem, onToggleFavourite }) {
+function ProblemRow({ problem, onToggleFavourite, onDelete }) {
   const PlatformIcon = problem.platformIcon;
 
   return (
@@ -57,6 +57,17 @@ function ProblemRow({ problem, onToggleFavourite }) {
           className="text-amber-400 hover:scale-110 transition-transform cursor-pointer"
         >
           {problem.favourite ? <FaStar /> : <FaRegStar className="text-slate-600" />}
+        </button>
+      </td>
+
+      <td className="py-3.5 pl-1">
+        <button
+          type="button"
+          onClick={() => onDelete?.(problem.id)}
+          aria-label="Delete problem"
+          className="text-slate-500 hover:text-red-400 hover:scale-110 transition-transform cursor-pointer"
+        >
+          <FaTrash />
         </button>
       </td>
     </tr>

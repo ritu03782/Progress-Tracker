@@ -1,17 +1,23 @@
-import { FaTimes, FaFire, FaClock, FaFlag, FaStickyNote, FaExternalLinkAlt, FaEdit } from "react-icons/fa";
+import { FaTimes, FaFire, FaClock, FaFlag, FaStickyNote, FaExternalLinkAlt, FaEdit, FaTrash } from "react-icons/fa";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import ProgressBar from "../common/ProgressBar";
 import SubjectTopic from "./SubjectTopic";
 import { getSubjectProgress, getWeakTopics } from "../../utils/subjectStats";
 
-function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, onEditSubject }) {
+function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, onEditSubject, onDelete, onEditTopicLink }) {
   if (!subject) return null;
 
   const progress = getSubjectProgress(subject);
   const completedCount = subject.topics.filter((t) => t.completed).length;
   const weakTopics = getWeakTopics(subject, 3);
   const Icon = subject.icon;
+
+  // Topics with a practice link double as study resources too.
+  const topicResources = subject.topics
+    .filter((t) => t.link)
+    .map((t) => ({ id: `topic-${t.id}`, label: `Practice: ${t.name}`, url: t.link }));
+  const allResources = [...subject.resources, ...topicResources];
 
   return (
     <>
@@ -104,6 +110,7 @@ function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, 
                   interactive
                   showProgress
                   onToggle={(topicId) => onToggleTopic(subject.id, topicId)}
+                  onEditLink={onEditTopicLink ? (topicId) => onEditTopicLink(topicId) : undefined}
                 />
               ))}
             </div>
@@ -121,7 +128,14 @@ function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, 
                     <span className="w-28 shrink-0 truncate text-sm text-slate-300">{topic.name}</span>
                     <ProgressBar value={topic.progress} color="#EF4444" className="flex-1" height="h-1.5" />
                     <span className="w-9 shrink-0 text-right text-xs text-slate-400">{topic.progress}%</span>
-                    <Button size="sm" variant="secondary">Practice</Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={!topic.link}
+                      onClick={() => topic.link && window.open(topic.link, "_blank", "noopener,noreferrer")}
+                    >
+                      Practice
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -153,20 +167,24 @@ function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, 
           {/* Resources */}
           <Card hover={false}>
             <h3 className="text-white font-semibold mb-3">Resources</h3>
-            <div className="space-y-2">
-              {subject.resources.map((res) => (
-                <a
-                  key={res.id}
-                  href={res.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between text-sm text-slate-300 hover:text-blue-400 transition-colors"
-                >
-                  {res.label}
-                  <FaExternalLinkAlt className="text-xs text-slate-500" />
-                </a>
-              ))}
-            </div>
+            {allResources.length === 0 ? (
+              <p className="text-sm text-slate-500">No resources yet — add a practice link to a topic to see it here.</p>
+            ) : (
+              <div className="space-y-2">
+                {allResources.map((res) => (
+                  <a
+                    key={res.id}
+                    href={res.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between text-sm text-slate-300 hover:text-blue-400 transition-colors"
+                  >
+                    {res.label}
+                    <FaExternalLinkAlt className="text-xs text-slate-500" />
+                  </a>
+                ))}
+              </div>
+            )}
           </Card>
 
           <Button
@@ -176,6 +194,20 @@ function SubjectDetails({ subject, isOpen, onClose, onToggleTopic, onEditNotes, 
           >
             <FaEdit /> Edit Subject
           </Button>
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(subject.id)}
+              className="
+                w-full flex items-center justify-center gap-2
+                text-sm font-medium text-red-400 hover:text-red-300
+                py-2 rounded-lg hover:bg-red-500/10 transition cursor-pointer
+              "
+            >
+              <FaTrash className="text-xs" /> Delete Subject
+            </button>
+          )}
         </div>
       </div>
     </>

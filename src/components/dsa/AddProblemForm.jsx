@@ -11,6 +11,7 @@ function AddProblemForm({ onSubmit, onCancel }) {
   const [difficulty, setDifficulty] = useState(DIFFICULTY_OPTIONS[0]);
   const [status, setStatus] = useState(STATUS_OPTIONS[0]);
   const [selectedPlatform, setSelectedPlatform] = useState(platformOptions[0]);
+  const [link, setLink] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,6 +28,7 @@ function AddProblemForm({ onSubmit, onCancel }) {
       lastSolved: status === "Solved" ? "Today" : "—",
       lastRevision: "—",
       favourite: false,
+      link: link.trim(),
     });
   };
 
@@ -45,9 +47,17 @@ function AddProblemForm({ onSubmit, onCancel }) {
 
       <div className="grid grid-cols-2 gap-3">
         <FormField label="Topic">
-          <select value={topic} onChange={(e) => setTopic(e.target.value)} className={inputClass}>
-            {TOPIC_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <input
+            type="text"
+            list="topic-options"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="Choose or type a topic"
+            className={inputClass}
+          />
+          <datalist id="topic-options">
+            {TOPIC_OPTIONS.map((t) => <option key={t} value={t} />)}
+          </datalist>
         </FormField>
         <FormField label="Difficulty">
           <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className={inputClass}>
@@ -55,6 +65,16 @@ function AddProblemForm({ onSubmit, onCancel }) {
           </select>
         </FormField>
       </div>
+
+      <FormField label="Link (optional)">
+        <input
+          type="url"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          placeholder="https://leetcode.com/problems/..."
+          className={inputClass}
+        />
+      </FormField>
 
       <div className="grid grid-cols-2 gap-3">
         <FormField label="Status">

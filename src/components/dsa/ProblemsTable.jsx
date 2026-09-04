@@ -11,9 +11,10 @@ const columns = [
   "Last Solved",
   "Last Revision",
   "",
+  "",
 ];
 
-function ProblemsTable({ problems = [], onToggleFavourite, className="",onViewAll }) {
+function ProblemsTable({ problems = [], onToggleFavourite, onDelete, className="",onViewAll }) {
   return (
     <Card
       padding="p-6"
@@ -61,6 +62,7 @@ function ProblemsTable({ problems = [], onToggleFavourite, className="",onViewAl
                 key={problem.id}
                 problem={problem}
                 onToggleFavourite={onToggleFavourite}
+                onDelete={onDelete}
               />
             ))}
           </tbody>

@@ -1,50 +1,79 @@
-import subjectsData from "../config/subjectsData";
+import request from "./apiClient";
+import { subjectIconOptions } from "../utils/iconOptions";
+import { isToday, isYesterday, differenceInCalendarDays, format } from "date-fns";
 
-// In-memory copy so the "backend" survives multiple calls within a session.
-// SWAP POINT: replace the bodies of these functions with real fetch() calls
-// to your API. The function signatures are the contract the rest of the
-// app depends on — keep them the same and nothing else needs to change.
+const DEFAULT_ICON = subjectIconOptions[0];
 
-let _subjects = subjectsData;
-
-const simulateLatency = (data) =>
-  new Promise((resolve) => setTimeout(() => resolve(data), 150));
-
-export async function getSubjects() {
-  // Later: const res = await fetch("/api/subjects"); return res.json();
-  return simulateLatency(_subjects);
+function formatRelativeDate(value) {
+  if (!value) return "Not started";
+  const date = new Date(value);
+  if (isToday(date)) return "Today";
+  if (isYesterday(date)) return "Yesterday";
+  const days = differenceInCalendarDays(new Date(), date);
+  if (days > 0 && days <= 30) return `${days} days ago`;
+  return format(date, "d MMM yyyy");
 }
 
-export async function getSubjectById(subjectId) {
-  // Later: const res = await fetch(`/api/subjects/${subjectId}`); return res.json();
-  const subject = _subjects.find((s) => s.id === subjectId) || null;
-  return simulateLatency(subject);
+// Backend stores only `iconLabel` (a string) — re-attach the real icon
+// component, color, bg, and gradient bar color from the existing
+// subjectIconOptions map, and turn lastStudiedAt into a display string.
+function shapeSubject(subject) {
+  const option = subjectIconOptions.find((opt) => opt.label === subject.iconLabel) || DEFAULT_ICON;
+  return {
+    ...subject,
+    icon: option.icon,
+    color: option.color,
+    bg: option.bg,
+    barColor: `linear-gradient(90deg,${option.hex},${option.hex}aa)`,
+    lastStudied: formatRelativeDate(subject.lastStudiedAt),
+  };
+}
+
+export async function getSubjects() {
+  const subjects = await request("/v1/subjects", { method: "GET" });
+  return subjects.map(shapeSubject);
+}
+
+export async function createSubject(subjectDraft) {
+  const payload = {
+    name: subjectDraft.name,
+    description: subjectDraft.description,
+    iconLabel: subjectDraft.iconLabel,
+    dailyTarget: subjectDraft.dailyTarget,
+    studyHours: subjectDraft.studyHours,
+    streak: subjectDraft.streak,
+    notes: subjectDraft.notes,
+    topics: (subjectDraft.topics || []).map((t) => ({ name: t.name, link: t.link || "" })),
+  };
+  const subject = await request("/v1/subjects", { method: "POST", body: payload });
+  return shapeSubject(subject);
+}
+
+export async function updateSubject(subjectId, updates) {
+  const subject = await request(`/v1/subjects/${subjectId}`, { method: "PATCH", body: updates });
+  return shapeSubject(subject);
+}
+
+export async function deleteSubject(subjectId) {
+  return request(`/v1/subjects/${subjectId}`, { method: "DELETE" });
 }
 
 export async function toggleSubjectTopic(subjectId, topicId) {
-  // Later: const res = await fetch(`/api/subjects/${subjectId}/topics/${topicId}/toggle`, { method: "PATCH" });
-  // return res.json();
-  _subjects = _subjects.map((subject) =>
-    subject.id !== subjectId
-      ? subject
-      : {
-          ...subject,
-          topics: subject.topics.map((topic) =>
-            topic.id !== topicId
-              ? topic
-              : {
-                  ...topic,
-                  completed: !topic.completed,
-                  progress: !topic.completed ? 100 : topic.progress,
-                }
-          ),
-        }
-  );
-  return simulateLatency(_subjects);
+  const subject = await request(`/v1/subjects/${subjectId}/topics/${topicId}/toggle`, { method: "PATCH" });
+  return shapeSubject(subject);
 }
 
-export async function createSubject(newSubject) {
-  // Later: const res = await fetch("/api/subjects", { method: "POST", body: JSON.stringify(newSubject) });
-  _subjects = [..._subjects, newSubject];
-  return simulateLatency(_subjects);
+export async function updateSubjectTopic(subjectId, topicId, updates) {
+  const subject = await request(`/v1/subjects/${subjectId}/topics/${topicId}`, { method: "PATCH", body: updates });
+  return shapeSubject(subject);
+}
+
+export async function toggleNeedsAttention(subjectId) {
+  const subject = await request(`/v1/subjects/${subjectId}/needs-attention`, { method: "PATCH" });
+  return shapeSubject(subject);
+}
+
+export async function hideFromRecent(subjectId) {
+  const subject = await request(`/v1/subjects/${subjectId}/hide-from-recent`, { method: "PATCH" });
+  return shapeSubject(subject);
 }

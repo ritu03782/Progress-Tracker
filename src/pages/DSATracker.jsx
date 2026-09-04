@@ -16,18 +16,23 @@ import { FiUpload } from "react-icons/fi";
 import Button from "../components/common/Button";
 
 import useProblems from "../hooks/useProblems";
-import favouriteQuestions from "../config/favouriteQuestions";
-import topicProgress from "../config/topicProgress";
-import weakTopics from "../config/weakTopics";
-import revisionQueueData from "../config/revisionQueue";
+import useWeakTopics from "../hooks/useWeakTopics";
 import { TOPIC_OPTIONS, DIFFICULTY_OPTIONS, STATUS_OPTIONS } from "../config/dsaOptions";
 import { platformOptions } from "../utils/platformOptions";
+import {
+  computeStats,
+  computeTopicProgress,
+  computeWeakTopicsFromSelection,
+  computePlatformStats,
+  computeRevisionQueue,
+  computeFavourites,
+} from "../utils/dsaSelectors";
 
 const PLATFORM_OPTIONS = platformOptions.map((p) => p.label);
 
 function DSATracker() {
-  const { problems, loading, addProblem, toggleFavourite } = useProblems();
-  const [revisionQueue, setRevisionQueue] = useState(revisionQueueData);
+  const { problems, loading, addProblem, removeProblem, toggleFavourite, reviseProblem } = useProblems();
+  const { weakTopics, addTopic: addWeakTopic, removeTopic: removeWeakTopic } = useWeakTopics();
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -47,6 +52,29 @@ function DSATracker() {
     });
   }, [problems, search, topic, difficulty, status, platform]);
 
+  // Topics are now free text (see AddProblemForm), so the filter's option
+  // list needs to include every topic actually in use, not just the
+  // suggested TOPIC_OPTIONS.
+  const topicFilterOptions = useMemo(() => {
+    const used = problems.map((p) => p.topic).filter(Boolean);
+    return [...new Set([...TOPIC_OPTIONS, ...used])].sort();
+  }, [problems]);
+
+  // Every dashboard view below is derived from the same `problems` array —
+  // no separate fetches, no duplicated data.
+  const stats = useMemo(() => computeStats(problems), [problems]);
+  const topicProgress = useMemo(() => computeTopicProgress(problems), [problems]);
+  const weakTopicsView = useMemo(
+    () => computeWeakTopicsFromSelection(problems, weakTopics),
+    [problems, weakTopics]
+  );
+  const { platforms: platformStats, total: totalSolved } = useMemo(
+    () => computePlatformStats(problems, platformOptions),
+    [problems]
+  );
+  const revisionQueue = useMemo(() => computeRevisionQueue(problems), [problems]);
+  const favouriteQuestions = useMemo(() => computeFavourites(problems), [problems]);
+
   function handleResetFilters() {
     setSearch("");
     setTopic("");
@@ -55,18 +83,23 @@ function DSATracker() {
     setPlatform("");
   }
 
-  function handleToggleRevisionItem(tab, id) {
-    setRevisionQueue((prev) => ({
-      ...prev,
-      [tab]: prev[tab].map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      ),
-    }));
-  }
+  // Clicking a revision-queue checkbox marks it revised right now and
+  // reschedules its next revision further out — it then naturally drops
+  // out of every bucket until that new date arrives.
+  const handleToggleRevisionItem = (_tab, id) => {
+    reviseProblem(id);
+  };
 
   const handleAddProblem = (problemDraft) => {
     addProblem(problemDraft);
     setIsAddOpen(false);
+  };
+
+  const handleDeleteProblem = (problemId) => {
+    const problem = problems.find((p) => p.id === problemId);
+    const confirmed = window.confirm(`Delete "${problem?.name || "this problem"}"? This can't be undone.`);
+    if (!confirmed) return;
+    removeProblem(problemId);
   };
 
   if (loading) {
@@ -94,24 +127,25 @@ function DSATracker() {
 
       <FilterBar
         searchValue={search}
-        onSearchChange={(e) => setSearch(e.target.value)}
+        onSearchChange={setSearch}
         searchPlaceholder="Search problems..."
         onReset={handleResetFilters}
         filters={[
-          { label: "All Topics", value: topic, onChange: (e) => setTopic(e.target.value), options: TOPIC_OPTIONS },
+          { label: "All Topics", value: topic, onChange: (e) => setTopic(e.target.value), options: topicFilterOptions },
           { label: "All Difficulties", value: difficulty, onChange: (e) => setDifficulty(e.target.value), options: DIFFICULTY_OPTIONS },
           { label: "All Status", value: status, onChange: (e) => setStatus(e.target.value), options: STATUS_OPTIONS },
           { label: "All Platforms", value: platform, onChange: (e) => setPlatform(e.target.value), options: PLATFORM_OPTIONS },
         ]}
       />
 
-      <StatsRow />
+      <StatsRow stats={stats} />
 
       <section className="mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-8">
           <ProblemsTable
             problems={filteredProblems}
             onToggleFavourite={toggleFavourite}
+            onDelete={handleDeleteProblem}
             className="h-full"
           />
         </div>
@@ -123,11 +157,16 @@ function DSATracker() {
 
       <section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
         <TopicProgress topics={topicProgress} className="h-full" />
-        <PlatformStats className="h-full" />
+        <PlatformStats platforms={platformStats} total={totalSolved} className="h-full" />
       </section>
 
       <section className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6 pb-10">
-        <WeakTopics topics={weakTopics} className="h-full" />
+        <WeakTopics
+          topics={weakTopicsView}
+          onAddTopic={addWeakTopic}
+          onRemoveTopic={removeWeakTopic}
+          className="h-full"
+        />
         <RevisionQueue
           queue={revisionQueue}
           onToggleItem={handleToggleRevisionItem}

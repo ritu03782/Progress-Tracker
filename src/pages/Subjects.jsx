@@ -12,16 +12,31 @@ import useSubjects from "../hooks/useSubjects";
 import { getOverallStats } from "../utils/subjectStats";
 
 function Subjects() {
-  const { subjects, loading, toggleTopic, addSubject } = useSubjects();
+  const {
+    subjects,
+    loading,
+    toggleTopic,
+    addSubject,
+    editSubject,
+    removeSubject,
+    updateTopicLink,
+    toggleNeedsAttention,
+    hideFromRecent,
+  } = useSubjects();
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingSubjectId, setEditingSubjectId] = useState(null); // non-null => edit modal open
 
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId) || null;
+  const editingSubject = subjects.find((s) => s.id === editingSubjectId) || null;
   const stats = useMemo(() => getOverallStats(subjects), [subjects]);
 
+  // Subjects the user has explicitly dismissed from this feed are excluded
+  // until they're actually studied again (see backend toggleTopic).
   const recentlyStudied = useMemo(() => {
     return subjects
+      .filter((s) => !s.hiddenFromRecent)
       .map((subject) => {
         const lastTopic = [...subject.topics].reverse().find((t) => t.completed);
         return lastTopic
@@ -42,6 +57,30 @@ function Subjects() {
   const handleAddSubject = (subjectDraft) => {
     addSubject(subjectDraft);
     setIsAddOpen(false);
+  };
+
+  // Edit Notes and Edit Subject both open the same edit form — notes is
+  // just one of the fields it can change, no need for a second form.
+  const handleEditSubject = async (updates) => {
+    if (!editingSubject) return;
+    await editSubject(editingSubject.id, updates);
+    setEditingSubjectId(null);
+  };
+
+  const handleDeleteSubject = (subjectId) => {
+    const subject = subjects.find((s) => s.id === subjectId);
+    const confirmed = window.confirm(`Delete "${subject?.name || "this subject"}"? This can't be undone.`);
+    if (!confirmed) return;
+    removeSubject(subjectId);
+    closeDrawer();
+  };
+
+  const handleEditTopicLink = (topicId) => {
+    if (!selectedSubject) return;
+    const topic = selectedSubject.topics.find((t) => t.id === topicId);
+    const link = window.prompt("Practice link for this topic (optional):", topic?.link || "");
+    if (link === null) return; // cancelled
+    updateTopicLink(selectedSubject.id, topicId, link.trim());
   };
 
   useEffect(() => {
@@ -75,8 +114,13 @@ function Subjects() {
       <SubjectGrid subjects={subjects} onView={openDrawer} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <NeedsAttention subjects={subjects} onView={openDrawer} />
-        <RecentlyStudied entries={recentlyStudied} onView={openDrawer} />
+        <NeedsAttention
+          subjects={subjects}
+          onView={openDrawer}
+          onAdd={toggleNeedsAttention}
+          onRemove={toggleNeedsAttention}
+        />
+        <RecentlyStudied entries={recentlyStudied} onView={openDrawer} onRemove={hideFromRecent} />
       </div>
 
       <SubjectDetails
@@ -84,12 +128,18 @@ function Subjects() {
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onToggleTopic={toggleTopic}
-        onEditNotes={() => {}}
-        onEditSubject={() => {}}
+        onEditNotes={(subjectId) => setEditingSubjectId(subjectId)}
+        onEditSubject={(subjectId) => setEditingSubjectId(subjectId)}
+        onEditTopicLink={handleEditTopicLink}
+        onDelete={handleDeleteSubject}
       />
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Subject">
         <AddSubjectForm onSubmit={handleAddSubject} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
+
+      <Modal isOpen={Boolean(editingSubject)} onClose={() => setEditingSubjectId(null)} title="Edit Subject">
+        <AddSubjectForm subject={editingSubject} onSubmit={handleEditSubject} onCancel={() => setEditingSubjectId(null)} />
       </Modal>
     </div>
   );

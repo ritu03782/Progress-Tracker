@@ -3,11 +3,16 @@ import Card from "../common/Card";
 import RevisionTabs from "./RevisionTabs";
 import { getDifficultyClass } from "../../utils/difficultyStyles";
 import { FaArrowRight } from "react-icons/fa";
-import { revisionTabs } from "../../config/revisionQueue";
+import { revisionTabs as baseRevisionTabs } from "../../config/revisionQueue";
 
 function RevisionQueue({ queue = {}, onViewAll,className="", onToggleItem }) {
-  const [activeTab, setActiveTab] = useState(revisionTabs[0].id);
+  const [activeTab, setActiveTab] = useState(baseRevisionTabs[0].id);
   const items = queue[activeTab] || [];
+
+  // Overdue badge reflects the real count instead of a hardcoded number.
+  const tabs = baseRevisionTabs.map((tab) =>
+    tab.id === "overdue" ? { ...tab, badge: queue.overdue?.length || 0 } : tab
+  );
 
   return (
     <Card
@@ -37,7 +42,7 @@ function RevisionQueue({ queue = {}, onViewAll,className="", onToggleItem }) {
       className={`h-full ${className}`}
     >
       <RevisionTabs
-        tabs={revisionTabs}
+        tabs={tabs}
         activeTab={activeTab}
         onChange={setActiveTab}
       />
