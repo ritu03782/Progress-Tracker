@@ -1,18 +1,8 @@
 import request from "./apiClient";
 import { subjectIconOptions } from "../utils/iconOptions";
-import { isToday, isYesterday, differenceInCalendarDays, format } from "date-fns";
+import { formatRelativeDate } from "../utils/relativeDate";
 
 const DEFAULT_ICON = subjectIconOptions[0];
-
-function formatRelativeDate(value) {
-  if (!value) return "Not started";
-  const date = new Date(value);
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  const days = differenceInCalendarDays(new Date(), date);
-  if (days > 0 && days <= 30) return `${days} days ago`;
-  return format(date, "d MMM yyyy");
-}
 
 // Backend stores only `iconLabel` (a string) — re-attach the real icon
 // component, color, bg, and gradient bar color from the existing
@@ -25,7 +15,7 @@ function shapeSubject(subject) {
     color: option.color,
     bg: option.bg,
     barColor: `linear-gradient(90deg,${option.hex},${option.hex}aa)`,
-    lastStudied: formatRelativeDate(subject.lastStudiedAt),
+    lastStudied: formatRelativeDate(subject.lastStudiedAt, "Not started"),
   };
 }
 

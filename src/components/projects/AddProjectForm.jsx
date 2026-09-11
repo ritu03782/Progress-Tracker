@@ -6,42 +6,57 @@ import { inputClass } from "../../utils/formStyles";
 
 const STATUS_OPTIONS = ["Planned", "In Progress", "Completed"];
 
-function AddProjectForm({ onSubmit, onCancel }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("Planned");
-  const [techText, setTechText] = useState("");
+// Same form for both "Add New Project" and "Edit Project" — pass an
+// existing `project` to pre-fill and switch into edit mode. In edit mode
+// the Tasks field is hidden: re-submitting a task list would wipe
+// completion data already tracked per task, so tasks are only ever
+// changed via the checkboxes in the drawer, never here.
+function AddProjectForm({ project, onSubmit, onCancel }) {
+  const isEditMode = Boolean(project);
+  const initialIcon = isEditMode
+    ? projectIconOptions.find((opt) => opt.label === project.iconLabel) || projectIconOptions[0]
+    : projectIconOptions[0];
+
+  const [name, setName] = useState(project?.name || "");
+  const [description, setDescription] = useState(project?.description || "");
+  const [status, setStatus] = useState(project?.status || "Planned");
+  const [techText, setTechText] = useState((project?.technologies || []).join(", "));
   const [tasksText, setTasksText] = useState("");
-  const [repoUrl, setRepoUrl] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState(projectIconOptions[0]);
+  const [repoUrl, setRepoUrl] = useState(project?.repoUrl || "");
+  const [notes, setNotes] = useState(project?.notes || "");
+  const [selectedIcon, setSelectedIcon] = useState(initialIcon);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
 
     const technologies = techText.split(",").map((t) => t.trim()).filter(Boolean);
+
+    const base = {
+      name: name.trim(),
+      description: description.trim() || "New project",
+      iconLabel: selectedIcon.label,
+      icon: selectedIcon.icon,
+      color: selectedIcon.color,
+      bg: selectedIcon.bg,
+      status,
+      technologies,
+      repoUrl: repoUrl.trim(),
+      notes: notes.trim(),
+    };
+
+    if (isEditMode) {
+      onSubmit(base);
+      return;
+    }
+
     const tasks = tasksText
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
       .map((title, index) => ({ id: index + 1, title, completed: false }));
 
-    onSubmit({
-      id: name.trim().toLowerCase().replace(/\s+/g, "-"),
-      name: name.trim(),
-      description: description.trim() || "New project",
-      icon: selectedIcon.icon,
-      color: selectedIcon.color,
-      bg: selectedIcon.bg,
-      barColor: `linear-gradient(90deg,${selectedIcon.hex},${selectedIcon.hex}aa)`,
-      hex: selectedIcon.hex,
-      status,
-      technologies,
-      repoUrl: repoUrl.trim() || "#",
-      notes: "",
-      lastUpdated: "Not started yet",
-      tasks,
-    });
+    onSubmit({ ...base, tasks });
   };
 
   return (
@@ -64,18 +79,30 @@ function AddProjectForm({ onSubmit, onCancel }) {
         <input type="text" value={techText} onChange={(e) => setTechText(e.target.value)} placeholder="React, Tailwind CSS, Vite" className={inputClass} />
       </FormField>
 
-      <FormField label="Tasks (one per line)">
-        <textarea
-          value={tasksText}
-          onChange={(e) => setTasksText(e.target.value)}
-          rows={4}
-          placeholder={"Setup project\nBuild UI\nConnect API\nDeploy"}
-          className={`${inputClass} resize-none`}
-        />
-      </FormField>
+      {!isEditMode && (
+        <FormField label="Tasks (one per line)">
+          <textarea
+            value={tasksText}
+            onChange={(e) => setTasksText(e.target.value)}
+            rows={4}
+            placeholder={"Setup project\nBuild UI\nConnect API\nDeploy"}
+            className={`${inputClass} resize-none`}
+          />
+        </FormField>
+      )}
 
       <FormField label="Repository URL">
         <input type="url" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} placeholder="https://github.com/..." className={inputClass} />
+      </FormField>
+
+      <FormField label="Notes">
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Any notes for this project..."
+          rows={3}
+          className={`${inputClass} resize-none`}
+        />
       </FormField>
 
       <FormField label="Icon">
@@ -99,7 +126,9 @@ function AddProjectForm({ onSubmit, onCancel }) {
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" className="flex-1 justify-center" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" variant="primary" className="flex-1 justify-center">Add Project</Button>
+        <Button type="submit" variant="primary" className="flex-1 justify-center">
+          {isEditMode ? "Save Changes" : "Add Project"}
+        </Button>
       </div>
     </form>
   );

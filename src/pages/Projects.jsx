@@ -13,10 +13,11 @@ import { getProjectsSummary } from "../utils/projectStats";
 const STATUS_OPTIONS = ["Planned", "In Progress", "Completed"];
 
 function Projects() {
-  const { projects, loading, toggleTask, addProject } = useProjects();
+  const { projects, loading, toggleTask, addProject, editProject, removeProject } = useProjects();
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState(null); // non-null => edit modal open
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -37,6 +38,7 @@ function Projects() {
   }, [projects, search, status, technology]);
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || null;
+  const editingProject = projects.find((p) => p.id === editingProjectId) || null;
   const summary = useMemo(() => getProjectsSummary(projects), [projects]);
 
   const openDrawer = (project) => { setSelectedProjectId(project.id); setIsDrawerOpen(true); };
@@ -51,6 +53,22 @@ function Projects() {
   const handleAddProject = (projectDraft) => {
     addProject(projectDraft);
     setIsAddOpen(false);
+  };
+
+  // Edit Notes and Edit Project both open the same edit form — notes is
+  // just one of the fields it can change.
+  const handleEditProject = async (updates) => {
+    if (!editingProject) return;
+    await editProject(editingProject.id, updates);
+    setEditingProjectId(null);
+  };
+
+  const handleDeleteProject = (projectId) => {
+    const project = projects.find((p) => p.id === projectId);
+    const confirmed = window.confirm(`Delete "${project?.name || "this project"}"? This can't be undone.`);
+    if (!confirmed) return;
+    removeProject(projectId);
+    closeDrawer();
   };
 
   if (loading) {
@@ -69,7 +87,7 @@ function Projects() {
 
       <FilterBar
         searchValue={search}
-        onSearchChange={(e) => setSearch(e.target.value)}
+        onSearchChange={setSearch}
         searchPlaceholder="Search projects..."
         onReset={handleResetFilters}
         filters={[
@@ -87,11 +105,17 @@ function Projects() {
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onToggleTask={toggleTask}
-        onEditProject={() => {}}
+        onEditProject={(projectId) => setEditingProjectId(projectId)}
+        onEditNotes={(projectId) => setEditingProjectId(projectId)}
+        onDelete={handleDeleteProject}
       />
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Project">
         <AddProjectForm onSubmit={handleAddProject} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
+
+      <Modal isOpen={Boolean(editingProject)} onClose={() => setEditingProjectId(null)} title="Edit Project">
+        <AddProjectForm project={editingProject} onSubmit={handleEditProject} onCancel={() => setEditingProjectId(null)} />
       </Modal>
     </div>
   );

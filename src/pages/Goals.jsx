@@ -11,13 +11,16 @@ import { useGoalsContext } from "../context/GoalsContext";
 import { getGoalsSummary, getGoalStatus } from "../utils/goalStats";
 
 function Goals() {
-  const { goals, completedGoals, loading, toggleGoalMilestone, bumpGoalCounter, addGoal } = useGoalsContext();
+  const { goals, completedGoals, loading, toggleGoalMilestone, bumpGoalCounter, addGoal, editGoal, removeGoal } = useGoalsContext();
   const [selectedGoalId, setSelectedGoalId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null); // non-null => edit modal open
 
-  const selectedGoal = goals.find((g) => g.id === selectedGoalId) || null;
+  const allGoals = useMemo(() => [...goals, ...completedGoals], [goals, completedGoals]);
+  const selectedGoal = allGoals.find((g) => g.id === selectedGoalId) || null;
+  const editingGoal = allGoals.find((g) => g.id === editingGoalId) || null;
   const summary = useMemo(() => getGoalsSummary(goals, completedGoals), [goals, completedGoals]);
   const filteredGoals = useMemo(
     () => (filter === "all" ? goals : goals.filter((g) => getGoalStatus(g) === filter)),
@@ -30,6 +33,22 @@ function Goals() {
   const handleAddGoal = (goalDraft) => {
     addGoal(goalDraft);
     setIsAddOpen(false);
+  };
+
+  // Edit Notes and Edit Goal both open the same edit form — notes is just
+  // one of the fields it can change.
+  const handleEditGoal = async (updates) => {
+    if (!editingGoal) return;
+    await editGoal(editingGoal.id, updates);
+    setEditingGoalId(null);
+  };
+
+  const handleDeleteGoal = (goalId) => {
+    const goal = allGoals.find((g) => g.id === goalId);
+    const confirmed = window.confirm(`Delete "${goal?.title || "this goal"}"? This can't be undone.`);
+    if (!confirmed) return;
+    removeGoal(goalId);
+    closeDrawer();
   };
 
   useEffect(() => {
@@ -84,11 +103,17 @@ function Goals() {
         onClose={closeDrawer}
         onToggleMilestone={toggleGoalMilestone}
         onBumpCounter={bumpGoalCounter}
-        onEditGoal={() => {}}
+        onEditGoal={(goalId) => setEditingGoalId(goalId)}
+        onEditNotes={(goalId) => setEditingGoalId(goalId)}
+        onDelete={handleDeleteGoal}
       />
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Goal">
         <AddGoalForm onSubmit={handleAddGoal} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
+
+      <Modal isOpen={Boolean(editingGoal)} onClose={() => setEditingGoalId(null)} title="Edit Goal">
+        <AddGoalForm goal={editingGoal} onSubmit={handleEditGoal} onCancel={() => setEditingGoalId(null)} />
       </Modal>
     </div>
   );

@@ -1,11 +1,11 @@
-import { FaTimes, FaGithub, FaExternalLinkAlt, FaStickyNote, FaEdit } from "react-icons/fa";
+import { FaTimes, FaGithub, FaExternalLinkAlt, FaStickyNote, FaEdit, FaTrash } from "react-icons/fa";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import ProgressRing from "../common/ProgressRing";
 import ChecklistItem from "../common/ChecklistItem";
 import { getProjectProgress } from "../../utils/projectStats";
 
-function ProjectDetails({ project, isOpen, onClose, onToggleTask, onEditProject }) {
+function ProjectDetails({ project, isOpen, onClose, onToggleTask, onEditProject, onEditNotes, onDelete }) {
   if (!project) return null;
 
   const progress = getProjectProgress(project);
@@ -107,7 +107,7 @@ function ProjectDetails({ project, isOpen, onClose, onToggleTask, onEditProject 
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-white font-semibold">Notes</h3>
-                  <button type="button" className="text-xs font-medium text-blue-400 hover:text-blue-300 cursor-pointer">Edit</button>
+                  <button type="button" onClick={() => onEditNotes?.(project.id)} className="text-xs font-medium text-blue-400 hover:text-blue-300 cursor-pointer">Edit</button>
                 </div>
                 <p className="text-slate-400 text-sm mt-2 leading-6">{project.notes}</p>
               </div>
@@ -117,6 +117,20 @@ function ProjectDetails({ project, isOpen, onClose, onToggleTask, onEditProject 
           <Button variant="primary" className="w-full justify-center flex items-center gap-2" onClick={() => onEditProject(project.id)}>
             <FaEdit /> Edit Project
           </Button>
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(project.id)}
+              className="
+                w-full flex items-center justify-center gap-2
+                text-sm font-medium text-red-400 hover:text-red-300
+                py-2 rounded-lg hover:bg-red-500/10 transition cursor-pointer
+              "
+            >
+              <FaTrash className="text-xs" /> Delete Project
+            </button>
+          )}
         </div>
       </div>
     </>

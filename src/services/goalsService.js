@@ -1,43 +1,61 @@
-import goalsData, { completedGoalsData } from "../config/goalsData";
+import request from "./apiClient";
+import { goalIconOptions } from "../utils/iconOptions";
 
-// SWAP POINT: replace bodies with real fetch() calls later. Signatures stay the same.
-let _goals = goalsData;
-const _completed = completedGoalsData;
+const DEFAULT_ICON = goalIconOptions[0];
 
-const simulateLatency = (data) => new Promise((resolve) => setTimeout(() => resolve(data), 150));
-
-export async function getGoals() {
-  return simulateLatency(_goals);
+// Backend stores only `iconLabel` (a string) — re-attach the real icon
+// component, color, bg, and gradient bar color from the existing
+// goalIconOptions map (same adapter pattern as Habits/Subjects).
+function shapeGoal(goal) {
+  const option = goalIconOptions.find((opt) => opt.label === goal.iconLabel) || DEFAULT_ICON;
+  return {
+    ...goal,
+    icon: option.icon,
+    color: option.color,
+    bg: option.bg,
+    barColor: `linear-gradient(90deg,${option.hex},${option.hex}aa)`,
+    hex: option.hex,
+  };
 }
 
-export async function getCompletedGoals() {
-  return simulateLatency(_completed);
+// One endpoint returns every goal — active vs completed is now a computed
+// filter (see GoalsContext), not two separate datasets to keep in sync.
+export async function getGoals() {
+  const goals = await request("/v1/goals", { method: "GET" });
+  return goals.map(shapeGoal);
+}
+
+export async function createGoal(goalDraft) {
+  const payload = {
+    title: goalDraft.title,
+    description: goalDraft.description,
+    iconLabel: goalDraft.iconLabel,
+    deadline: goalDraft.deadline,
+    progressType: goalDraft.progressType,
+    unitLabel: goalDraft.unitLabel,
+    notes: goalDraft.notes,
+    target: goalDraft.target,
+    milestones: goalDraft.milestones,
+  };
+  const goal = await request("/v1/goals", { method: "POST", body: payload });
+  return shapeGoal(goal);
+}
+
+export async function updateGoal(goalId, updates) {
+  const goal = await request(`/v1/goals/${goalId}`, { method: "PATCH", body: updates });
+  return shapeGoal(goal);
+}
+
+export async function deleteGoal(goalId) {
+  return request(`/v1/goals/${goalId}`, { method: "DELETE" });
 }
 
 export async function toggleMilestone(goalId, milestoneId) {
-  _goals = _goals.map((goal) =>
-    goal.id !== goalId
-      ? goal
-      : {
-          ...goal,
-          milestones: goal.milestones.map((m) =>
-            m.id !== milestoneId ? m : { ...m, completed: !m.completed }
-          ),
-        }
-  );
-  return simulateLatency(_goals);
+  const goal = await request(`/v1/goals/${goalId}/milestones/${milestoneId}/toggle`, { method: "PATCH" });
+  return shapeGoal(goal);
 }
 
 export async function adjustGoalCounter(goalId, amount) {
-  _goals = _goals.map((goal) =>
-    goal.id !== goalId
-      ? goal
-      : { ...goal, current: Math.max(0, Math.min(goal.target, goal.current + amount)) }
-  );
-  return simulateLatency(_goals);
-}
-
-export async function createGoal(newGoal) {
-  _goals = [..._goals, newGoal];
-  return simulateLatency(_goals);
+  const goal = await request(`/v1/goals/${goalId}/counter`, { method: "PATCH", body: { amount } });
+  return shapeGoal(goal);
 }

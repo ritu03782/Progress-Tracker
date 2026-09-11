@@ -1,21 +1,8 @@
 import request from "./apiClient";
 import { platformOptions } from "../utils/platformOptions";
-import { isToday, isYesterday, differenceInCalendarDays, format } from "date-fns";
+import { formatRelativeDate } from "../utils/relativeDate";
 
 const DEFAULT_PLATFORM = platformOptions[0];
-
-// Backend stores raw ISO dates — turn them into the same display strings
-// the mock used to hardcode ("Today", "Yesterday", "3 days ago", or a
-// formatted date for anything older).
-function formatRelativeDate(value) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  const days = differenceInCalendarDays(new Date(), date);
-  if (days > 0 && days <= 30) return `${days} days ago`;
-  return format(date, "d MMM yyyy");
-}
 
 // Backend stores only `platform` (a string) — re-attach the real icon
 // component + color from the existing platformOptions map, and convert

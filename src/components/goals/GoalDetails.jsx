@@ -1,10 +1,10 @@
-import { FaTimes, FaCalendarAlt, FaStickyNote, FaEdit, FaPlus, FaMinus } from "react-icons/fa";
+import { FaTimes, FaCalendarAlt, FaStickyNote, FaEdit, FaPlus, FaMinus, FaTrash } from "react-icons/fa";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import ProgressRing from "../common/ProgressRing";
 import { getGoalProgress, formatDeadline } from "../../utils/goalStats";
 import ChecklistItem from "../common/ChecklistItem";
-function GoalDetails({ goal, isOpen, onClose, onToggleMilestone, onBumpCounter, onEditGoal }) {
+function GoalDetails({ goal, isOpen, onClose, onToggleMilestone, onBumpCounter, onEditGoal, onEditNotes, onDelete }) {
   if (!goal) return null;
 
   const progress = getGoalProgress(goal);
@@ -118,7 +118,11 @@ function GoalDetails({ goal, isOpen, onClose, onToggleMilestone, onBumpCounter, 
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-white font-semibold">Notes</h3>
-                  <button type="button" className="text-xs font-medium text-blue-400 hover:text-blue-300 cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => onEditNotes?.(goal.id)}
+                    className="text-xs font-medium text-blue-400 hover:text-blue-300 cursor-pointer"
+                  >
                     Edit
                   </button>
                 </div>
@@ -130,6 +134,20 @@ function GoalDetails({ goal, isOpen, onClose, onToggleMilestone, onBumpCounter, 
           <Button variant="primary" className="w-full justify-center flex items-center gap-2" onClick={() => onEditGoal(goal.id)}>
             <FaEdit /> Edit Goal
           </Button>
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(goal.id)}
+              className="
+                w-full flex items-center justify-center gap-2
+                text-sm font-medium text-red-400 hover:text-red-300
+                py-2 rounded-lg hover:bg-red-500/10 transition cursor-pointer
+              "
+            >
+              <FaTrash className="text-xs" /> Delete Goal
+            </button>
+          )}
         </div>
       </div>
     </>

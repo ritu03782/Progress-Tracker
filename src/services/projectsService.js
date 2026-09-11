@@ -1,22 +1,55 @@
-import projectsData from "../config/projectsData";
+import request from "./apiClient";
+import { projectIconOptions } from "../utils/iconOptions";
+import { formatRelativeDate } from "../utils/relativeDate";
 
-let _projects = projectsData;
-const simulateLatency = (data) => new Promise((resolve) => setTimeout(() => resolve(data), 150));
+const DEFAULT_ICON = projectIconOptions[0];
+
+// Backend stores only `iconLabel` (a string) and a raw `lastUpdatedAt`
+// date — re-attach the icon component/color/gradient and format the date
+// (same adapter pattern as DSA/Subjects).
+function shapeProject(project) {
+  const option = projectIconOptions.find((opt) => opt.label === project.iconLabel) || DEFAULT_ICON;
+  return {
+    ...project,
+    icon: option.icon,
+    color: option.color,
+    bg: option.bg,
+    barColor: `linear-gradient(90deg,${option.hex},${option.hex}aa)`,
+    hex: option.hex,
+    lastUpdated: formatRelativeDate(project.lastUpdatedAt, "Not started yet"),
+  };
+}
 
 export async function getProjects() {
-  return simulateLatency(_projects);
+  const projects = await request("/v1/projects", { method: "GET" });
+  return projects.map(shapeProject);
+}
+
+export async function createProject(projectDraft) {
+  const payload = {
+    name: projectDraft.name,
+    description: projectDraft.description,
+    iconLabel: projectDraft.iconLabel,
+    status: projectDraft.status,
+    technologies: projectDraft.technologies,
+    repoUrl: projectDraft.repoUrl,
+    notes: projectDraft.notes,
+    tasks: (projectDraft.tasks || []).map((t) => t.title),
+  };
+  const project = await request("/v1/projects", { method: "POST", body: payload });
+  return shapeProject(project);
+}
+
+export async function updateProject(projectId, updates) {
+  const project = await request(`/v1/projects/${projectId}`, { method: "PATCH", body: updates });
+  return shapeProject(project);
+}
+
+export async function deleteProject(projectId) {
+  return request(`/v1/projects/${projectId}`, { method: "DELETE" });
 }
 
 export async function toggleProjectTask(projectId, taskId) {
-  _projects = _projects.map((p) =>
-    p.id !== projectId
-      ? p
-      : { ...p, tasks: p.tasks.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t)) }
-  );
-  return simulateLatency(_projects);
-}
-
-export async function createProject(newProject) {
-  _projects = [..._projects, newProject];
-  return simulateLatency(_projects);
+  const project = await request(`/v1/projects/${projectId}/tasks/${taskId}/toggle`, { method: "PATCH" });
+  return shapeProject(project);
 }
