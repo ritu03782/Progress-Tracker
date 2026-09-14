@@ -9,9 +9,12 @@ import { inputClass } from "../../utils/formStyles";
 
 const TABS = ["Overview", "Timeline", "Notes", "Resources"];
 
-function ApplicationDetails({ application, isOpen, onClose, onUpdateNotes, onDeleteApplication, onEditApplication }) {
+function ApplicationDetails({ application, isOpen, onClose, onUpdateNotes, onDeleteApplication, onEditApplication, onAdvanceStage, onReject, onReopen }) {
   const [activeTab, setActiveTab] = useState("Overview");
   const [notesDraft, setNotesDraft] = useState("");
+  const [targetStage, setTargetStage] = useState("");
+  const [stepDate, setStepDate] = useState("");
+  const [stepTime, setStepTime] = useState("");
 
   if (!application) return null;
 
@@ -19,6 +22,23 @@ function ApplicationDetails({ application, isOpen, onClose, onUpdateNotes, onDel
   const saveNotes = () => {
     onUpdateNotes(application.id, notesDraft);
     setNotesDraft(null);
+  };
+
+  const STAGE_ORDER = ["Applied", "OA", "Interview", "Offer"];
+  const nextStages = STAGE_ORDER.slice(STAGE_ORDER.indexOf(application.status) + 1);
+  const stageToSubmit = targetStage || nextStages[0];
+
+  const handleAdvanceSubmit = (e) => {
+    e.preventDefault();
+    if (!stageToSubmit) return;
+    onAdvanceStage?.(application.id, {
+      stage: stageToSubmit,
+      nextStepDate: stepDate || undefined,
+      nextStepTime: stepTime || undefined,
+    });
+    setTargetStage("");
+    setStepDate("");
+    setStepTime("");
   };
 
   return (
@@ -112,6 +132,63 @@ function ApplicationDetails({ application, isOpen, onClose, onUpdateNotes, onDel
                     {application.nextStep.badge}
                   </span>
                 </div>
+              </Card>
+
+              <Card hover={false}>
+                <h3 className="text-white font-semibold mb-3">Update Status</h3>
+
+                {application.status !== "Rejected" ? (
+                  <>
+                    {nextStages.length > 0 && (
+                      <form onSubmit={handleAdvanceSubmit} className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <select
+                            value={stageToSubmit}
+                            onChange={(e) => setTargetStage(e.target.value)}
+                            className={inputClass}
+                          >
+                            {nextStages.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="date"
+                            value={stepDate}
+                            onChange={(e) => setStepDate(e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <input
+                          type="time"
+                          value={stepTime}
+                          onChange={(e) => setStepTime(e.target.value)}
+                          className={inputClass}
+                        />
+                        <Button type="submit" variant="primary" size="sm" className="w-full justify-center">
+                          Move to {stageToSubmit}
+                        </Button>
+                      </form>
+                    )}
+
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="w-full justify-center mt-3"
+                      onClick={() => onReject?.(application.id)}
+                    >
+                      Mark as Rejected
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-center"
+                    onClick={() => onReopen?.(application.id)}
+                  >
+                    Reopen Application
+                  </Button>
+                )}
               </Card>
 
               <Card hover={false}>

@@ -8,6 +8,7 @@ import UpcomingContestsList from "../components/contests/UpcomingContestsList";
 import ContestHistoryTable from "../components/contests/ContestHistoryTable";
 import ContestDetails from "../components/contests/ContestDetails";
 import AddContestForm from "../components/contests/AddContestForm";
+import LogResultForm from "../components/contests/LogResultForm";
 import useContests from "../hooks/useContests";
 import { getContestsSummary } from "../utils/contestStats";
 import { platformOptions } from "../utils/platformOptions";
@@ -17,10 +18,12 @@ const TYPE_OPTIONS = ["Rated", "Unrated"];
 const PLATFORM_OPTIONS = platformOptions.map((p) => p.label);
 
 function Contests() {
-  const { contests, loading, addContest } = useContests();
+  const { contests, loading, addContest, editContest, removeContest, logResult, reopenContest } = useContests();
   const [selectedContestId, setSelectedContestId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null); // non-null => edit modal open
+  const [loggingId, setLoggingId] = useState(null); // non-null => log/edit result modal open
 
   const [search, setSearch] = useState("");
   const [platform, setPlatform] = useState("");
@@ -44,6 +47,8 @@ function Contests() {
   );
 
   const selectedContest = contests.find((c) => c.id === selectedContestId) || null;
+  const editingContest = contests.find((c) => c.id === editingId) || null;
+  const loggingContest = contests.find((c) => c.id === loggingId) || null;
   const summary = useMemo(() => getContestsSummary(contests), [contests]);
 
   const openDrawer = (contest) => { setSelectedContestId(contest.id); setIsDrawerOpen(true); };
@@ -59,6 +64,22 @@ function Contests() {
   const handleAddContest = (contestDraft) => {
     addContest(contestDraft);
     setIsAddOpen(false);
+  };
+
+  const handleEditContest = async (updates) => {
+    if (!editingContest) return;
+    await editContest(editingContest.id, updates);
+    setEditingId(null);
+  };
+
+  const handleLogResult = async (resultDraft) => {
+    if (!loggingContest) return;
+    await logResult(loggingContest.id, resultDraft);
+    setLoggingId(null);
+  };
+
+  const handleReopen = (contestId) => {
+    reopenContest(contestId);
   };
 
   if (loading) {
@@ -77,7 +98,7 @@ function Contests() {
 
       <FilterBar
         searchValue={search}
-        onSearchChange={(e) => setSearch(e.target.value)}
+        onSearchChange={setSearch}
         searchPlaceholder="Search contests..."
         onReset={handleResetFilters}
         filters={[
@@ -89,19 +110,33 @@ function Contests() {
 
       <ContestsStatsBar summary={summary} />
 
-      <UpcomingContestsList contests={upcoming} onView={openDrawer} onViewAll={() => {}} />
+      <UpcomingContestsList contests={upcoming} onView={openDrawer} />
 
-      <ContestHistoryTable contests={history} onView={openDrawer} onViewAll={() => {}} />
+      <ContestHistoryTable contests={history} onView={openDrawer} />
 
       <ContestDetails
         contest={selectedContest}
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
-        onEditContest={() => {}}
+        onEditContest={(id) => setEditingId(id)}
+        onLogResult={(id) => setLoggingId(id)}
+        onEditResult={(id) => setLoggingId(id)}
+        onReopen={handleReopen}
+        onDelete={removeContest}
       />
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Contest">
         <AddContestForm onSubmit={handleAddContest} onCancel={() => setIsAddOpen(false)} />
+      </Modal>
+
+      <Modal isOpen={Boolean(editingContest)} onClose={() => setEditingId(null)} title="Edit Contest">
+        <AddContestForm contest={editingContest} onSubmit={handleEditContest} onCancel={() => setEditingId(null)} />
+      </Modal>
+
+      <Modal isOpen={Boolean(loggingContest)} onClose={() => setLoggingId(null)} title="Log Contest Result">
+        {loggingContest && (
+          <LogResultForm contest={loggingContest} onSubmit={handleLogResult} onCancel={() => setLoggingId(null)} />
+        )}
       </Modal>
     </div>
   );

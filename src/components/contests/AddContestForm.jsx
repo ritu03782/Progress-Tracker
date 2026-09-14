@@ -6,30 +6,34 @@ import { platformOptions } from "../../utils/platformOptions";
 
 const TYPE_OPTIONS = ["Rated", "Unrated"];
 
-function AddContestForm({ onSubmit, onCancel }) {
-  const [name, setName] = useState("");
-  const [platform, setPlatform] = useState(platformOptions[0].label);
-  const [type, setType] = useState("Rated");
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [duration, setDuration] = useState("");
-  const [registrationLink, setRegistrationLink] = useState("");
+// Same form for both "Add New Contest" and "Edit Contest". Status/results
+// are never touched here — those only change via the dedicated Log Result
+// flow in the drawer.
+function AddContestForm({ contest, onSubmit, onCancel }) {
+  const isEditMode = Boolean(contest);
+
+  const [name, setName] = useState(contest?.name || "");
+  const [platform, setPlatform] = useState(contest?.platform || platformOptions[0].label);
+  const [type, setType] = useState(contest?.type || "Rated");
+  const [date, setDate] = useState(contest?.date || "");
+  const [startTime, setStartTime] = useState(contest?.startTime || "");
+  const [duration, setDuration] = useState(contest?.duration || "");
+  const [registrationLink, setRegistrationLink] = useState(contest?.registrationLink || "");
+  const [notes, setNotes] = useState(contest?.notes || "");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim() || !date) return;
 
     onSubmit({
-      id: `${name.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
       name: name.trim(),
       platform,
-      status: "Upcoming",
       type,
       date,
       startTime: startTime.trim() || "TBD",
       duration: duration.trim() || "TBD",
-      startsIn: "Upcoming",
-      registrationLink: registrationLink.trim() || "#",
+      registrationLink: registrationLink.trim(),
+      notes: notes.trim(),
     });
   };
 
@@ -69,9 +73,21 @@ function AddContestForm({ onSubmit, onCancel }) {
         <input type="url" value={registrationLink} onChange={(e) => setRegistrationLink(e.target.value)} placeholder="https://..." className={inputClass} />
       </FormField>
 
+      <FormField label="Notes">
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Any notes about this contest..."
+          rows={3}
+          className={`${inputClass} resize-none`}
+        />
+      </FormField>
+
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" className="flex-1 justify-center" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" variant="primary" className="flex-1 justify-center">Add Contest</Button>
+        <Button type="submit" variant="primary" className="flex-1 justify-center">
+          {isEditMode ? "Save Changes" : "Add Contest"}
+        </Button>
       </div>
     </form>
   );

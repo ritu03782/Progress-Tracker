@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { FaArrowRight } from "react-icons/fa";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import Pagination from "../common/Pagination";
@@ -8,7 +7,9 @@ import { platformOptions } from "../../utils/platformOptions";
 
 const PAGE_SIZE = 5;
 
-function ContestHistoryTable({ contests, onView, onViewAll }) {
+// No "View All" button here — pagination already provides a way to see
+// every contest; there's nothing left for it to reveal.
+function ContestHistoryTable({ contests, onView }) {
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(contests.length / PAGE_SIZE));
   const pageItems = useMemo(
@@ -17,19 +18,7 @@ function ContestHistoryTable({ contests, onView, onViewAll }) {
   );
 
   return (
-    <Card
-      hover={false}
-      title="Contest History"
-      action={
-        <button
-          type="button"
-          onClick={onViewAll}
-          className="flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-        >
-          View All <FaArrowRight className="text-xs" />
-        </button>
-      }
-    >
+    <Card hover={false} title="Contest History">
       <div className="overflow-x-auto -mx-1">
         <table className="w-full min-width-[720px] border-collapse px-1">
           <thead>

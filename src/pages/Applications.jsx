@@ -12,34 +12,77 @@ import useApplications from "../hooks/useApplications";
 import { getApplicationsSummary } from "../utils/applicationStats";
 
 function Applications() {
-  const { applications, loading, addApplication, updateNotes, removeApplication } = useApplications();
+  const {
+    applications,
+    loading,
+    addApplication,
+    editApplication,
+    updateNotes,
+    removeApplication,
+    advanceStage,
+    rejectApp,
+    reopenApp,
+  } = useApplications();
+
   const [selectedId, setSelectedId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [companyType, setCompanyType] = useState("");
   const [activeStatus, setActiveStatus] = useState("All");
 
-  const roleOptions = useMemo(() => [...new Set(applications.map((a) => a.role))], [applications]);
-  const jobTypeOptions = useMemo(() => [...new Set(applications.map((a) => a.jobType))], [applications]);
+  const roleOptions = useMemo(
+    () => [...new Set(applications.map((a) => a.role).filter(Boolean))],
+    [applications]
+  );
+
+  const jobTypeOptions = useMemo(
+    () => [...new Set(applications.map((a) => a.jobType).filter(Boolean))],
+    [applications]
+  );
 
   const filteredApplications = useMemo(() => {
+    const searchTerm = search.toLowerCase();
+
     return applications.filter((a) => {
-      if (search && !a.company.toLowerCase().includes(search.toLowerCase()) && !a.role.toLowerCase().includes(search.toLowerCase())) return false;
+      if (
+        searchTerm &&
+        !a.company?.toLowerCase().includes(searchTerm) &&
+        !a.role?.toLowerCase().includes(searchTerm)
+      ) {
+        return false;
+      }
+
       if (role && a.role !== role) return false;
       if (companyType && a.jobType !== companyType) return false;
       if (activeStatus !== "All" && a.status !== activeStatus) return false;
+
       return true;
     });
   }, [applications, search, role, companyType, activeStatus]);
 
-  const selectedApplication = applications.find((a) => a.id === selectedId) || null;
-  const summary = useMemo(() => getApplicationsSummary(applications), [applications]);
+  const selectedApplication =
+    applications.find((a) => a.id === selectedId) || null;
 
-  const openDrawer = (app) => { setSelectedId(app.id); setIsDrawerOpen(true); };
-  const closeDrawer = () => setIsDrawerOpen(false);
+  const editingApplication =
+    applications.find((a) => a.id === editingId) || null;
+
+  const summary = useMemo(
+    () => getApplicationsSummary(applications),
+    [applications]
+  );
+
+  const openDrawer = (app) => {
+    setSelectedId(app.id);
+    setIsDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+  };
 
   const handleResetFilters = () => {
     setSearch("");
@@ -48,17 +91,29 @@ function Applications() {
     setActiveStatus("All");
   };
 
-  const handleAddApplication = (draft) => {
-    addApplication(draft);
+  const handleAddApplication = async (draft) => {
+    await addApplication(draft);
     setIsAddOpen(false);
   };
 
+  const handleEditApplication = async (updates) => {
+    if (!editingApplication) return;
+
+    await editApplication(editingApplication.id, updates);
+    setEditingId(null);
+  };
+
   if (loading) {
-    return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-slate-400">Loading applications...</div>;
+    return (
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-slate-400">
+        Loading applications...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] p-6 md:p-8 space-y-6 text-white">
+    <div className="min-h-screen bg-[#0F172A] p-6 md:p-8 space-y-8 text-white">
+      {/* Header */}
       <PageHeader
         title="Applications"
         subtitle="Track your job applications and stay prepared."
@@ -67,42 +122,106 @@ function Applications() {
         onButtonClick={() => setIsAddOpen(true)}
       />
 
+      {/* Insights Section */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-white">
+          Application Insights
+        </h2>
+
+        <StatCardsRow
+          summary={summary}
+          size="large"
+        />
+      </section>
+
+      {/* Filters */}
       <FilterBar
         searchValue={search}
-        onSearchChange={(e) => setSearch(e.target.value)}
+        onSearchChange={setSearch}
         searchPlaceholder="Search applications..."
         onReset={handleResetFilters}
         filters={[
-          { label: "All Roles", value: role, onChange: (e) => setRole(e.target.value), options: roleOptions },
-          { label: "All Status", value: activeStatus === "All" ? "" : activeStatus, onChange: (e) => setActiveStatus(e.target.value || "All"), options: ["Applied", "OA", "Interview", "Offer", "Rejected"] },
-          { label: "All Company Type", value: companyType, onChange: (e) => setCompanyType(e.target.value), options: jobTypeOptions },
+          {
+            label: "All Roles",
+            value: role,
+            onChange: (e) => setRole(e.target.value),
+            options: roleOptions,
+          },
+          {
+            label: "All Status",
+            value: activeStatus === "All" ? "" : activeStatus,
+            onChange: (e) =>
+              setActiveStatus(e.target.value || "All"),
+            options: [
+              "Applied",
+              "OA",
+              "Interview",
+              "Offer",
+              "Rejected",
+            ],
+          },
+          {
+            label: "All Company Type",
+            value: companyType,
+            onChange: (e) => setCompanyType(e.target.value),
+            options: jobTypeOptions,
+          },
         ]}
       />
 
-      <StatusTabs counts={summary} activeStatus={activeStatus} onChange={setActiveStatus} />
+      {/* Status Tabs */}
+      <StatusTabs
+        counts={summary}
+        activeStatus={activeStatus}
+        onChange={setActiveStatus}
+      />
 
-      <StatCardsRow summary={summary} size="compact" />
+      {/* Applications Table */}
+      <ApplicationsTable
+        applications={filteredApplications}
+        onView={openDrawer}
+        onDelete={removeApplication}
+      />
 
-      <ApplicationsTable applications={filteredApplications} onView={openDrawer} onDelete={removeApplication} />
-
-      <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Application Insights</h2>
-        <StatCardsRow summary={summary} size="large" />
-      </div>
-
+      {/* Application Details Drawer */}
       <ApplicationDetails
         application={selectedApplication}
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onUpdateNotes={updateNotes}
         onDeleteApplication={removeApplication}
-        onEditApplication={() => {}}
+        onEditApplication={(id) => setEditingId(id)}
+        onAdvanceStage={advanceStage}
+        onReject={rejectApp}
+        onReopen={reopenApp}
       />
 
-      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Application">
-        <AddApplicationForm onSubmit={handleAddApplication} onCancel={() => setIsAddOpen(false)} />
+      {/* Add Application Modal */}
+      <Modal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="Add New Application"
+      >
+        <AddApplicationForm
+          onSubmit={handleAddApplication}
+          onCancel={() => setIsAddOpen(false)}
+        />
+      </Modal>
+
+      {/* Edit Application Modal */}
+      <Modal
+        isOpen={Boolean(editingApplication)}
+        onClose={() => setEditingId(null)}
+        title="Edit Application"
+      >
+        <AddApplicationForm
+          application={editingApplication}
+          onSubmit={handleEditApplication}
+          onCancel={() => setEditingId(null)}
+        />
       </Modal>
     </div>
   );
 }
+
 export default Applications;

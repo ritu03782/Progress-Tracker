@@ -9,6 +9,8 @@ import {
   FaClock,
   FaCircleCheck,
   FaNoteSticky,
+  FaTrash,
+  FaClipboardCheck,
 } from "react-icons/fa6";
 
 import Card from "../common/Card";
@@ -16,7 +18,7 @@ import Button from "../common/Button";
 import { getPlatformStyle } from "../../utils/contestStats";
 import { platformOptions } from "../../utils/platformOptions";
 
-function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
+function ContestDetails({ contest, isOpen, onClose, onEditContest, onLogResult, onEditResult, onReopen, onDelete }) {
   if (!contest) return null;
 
   const { icon: Icon, color } = getPlatformStyle(
@@ -247,7 +249,7 @@ function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
                     >
                       <span className="text-slate-300 truncate">
                         <span className="text-slate-500 mr-1.5">
-                          {p.id} -
+                          {p.label} -
                         </span>
                         {p.name}
                       </span>
@@ -283,6 +285,7 @@ function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
 
                       <button
                         type="button"
+                        onClick={() => onEditResult?.(contest.id)}
                         className="text-xs font-medium text-blue-400 hover:text-blue-300 cursor-pointer"
                       >
                         Edit
@@ -295,6 +298,14 @@ function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
                   </div>
                 </div>
               </Card>
+
+              <button
+                type="button"
+                onClick={() => onReopen?.(contest.id)}
+                className="w-full text-center text-xs font-medium text-slate-500 hover:text-slate-300 transition cursor-pointer"
+              >
+                Logged this by mistake? Revert to Upcoming
+              </button>
             </>
           ) : (
             /* Upcoming Contest */
@@ -306,18 +317,26 @@ function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
                 This contest hasn't happened yet.
               </p>
 
-              <a
-                href={contest.registrationLink}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                <a
+                  href={contest.registrationLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Button variant="secondary">
+                    Register Now
+                  </Button>
+                </a>
+
                 <Button
                   variant="primary"
-                  className="mt-4"
+                  className="flex items-center gap-2 justify-center"
+                  onClick={() => onLogResult?.(contest.id)}
                 >
-                  Register Now
+                  <FaClipboardCheck className="text-xs" />
+                  Log Contest Result
                 </Button>
-              </a>
+              </div>
             </Card>
           )}
 
@@ -348,6 +367,17 @@ function ContestDetails({ contest, isOpen, onClose, onEditContest }) {
               <FaPenToSquare />
               Edit Details
             </Button>
+
+            {onDelete && (
+              <Button
+                variant="danger"
+                className="flex-1 justify-center flex items-center gap-2"
+                onClick={() => { onDelete(contest.id); onClose(); }}
+              >
+                <FaTrash />
+                Delete
+              </Button>
+            )}
           </div>
         </div>
       </div>
