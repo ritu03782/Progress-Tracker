@@ -14,6 +14,7 @@ function shapeSubject(subject) {
     icon: option.icon,
     color: option.color,
     bg: option.bg,
+    hex: option.hex,
     barColor: `linear-gradient(90deg,${option.hex},${option.hex}aa)`,
     lastStudied: formatRelativeDate(subject.lastStudiedAt, "Not started"),
   };

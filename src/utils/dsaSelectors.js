@@ -17,7 +17,7 @@ import {
   FaCode,
   FaCubes,
 } from "react-icons/fa";
-import { startOfDay, addDays, isSameDay, differenceInCalendarDays } from "date-fns";
+import { startOfDay, addDays, isSameDay, differenceInCalendarDays, subDays, format } from "date-fns";
 
 // A small, fixed icon/color per DSA topic (matches TOPIC_OPTIONS in
 // config/dsaOptions.js) — mirrors the old config/topicProgress.js and
@@ -167,6 +167,17 @@ export function computeRevisionQueue(problems) {
   });
 
   return buckets;
+}
+
+// --- Weekly Activity (Dashboard): problems solved per day, last 7 days ---
+export function computeWeeklyActivity(problems) {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const day = subDays(new Date(), i);
+    const solved = problems.filter((p) => p.solvedAt && isSameDay(new Date(p.solvedAt), day)).length;
+    days.push({ day: format(day, "EEE"), solved });
+  }
+  return days;
 }
 
 // --- Favourites: just a filter, kept here for a single import point ---

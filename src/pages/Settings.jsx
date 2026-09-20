@@ -1,16 +1,34 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  FaUser, FaLock, FaBell, FaBook, FaBullseye, FaPalette,
-  FaShieldAlt, FaFileExport, FaTrash,
+  FaUser, FaLock, FaBell, FaBook, FaBullseye,
+  FaFileExport, FaTrash,
 } from "react-icons/fa";
 import PageHeader from "../components/common/PageHeader";
 import Card from "../components/common/Card";
+import Modal from "../components/common/Modal";
 import Toggle from "../components/common/Toggle";
+import Button from "../components/common/Button";
 import SettingsRow from "../components/settings/SettingsRow";
-import ThemeSwitcher from "../components/settings/ThemeSwitcher";
+import ChangePasswordForm from "../components/settings/ChangePasswordForm";
 import useSettings from "../hooks/useSettings";
 
 function Settings() {
-  const { settings, loading, saveSettings } = useSettings();
+  const navigate = useNavigate();
+  const { settings, loading, savePreferences, exportData, deleteAccount } = useSettings();
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    const success = await deleteAccount();
+    setDeleting(false);
+    if (success) {
+      navigate("/login", { replace: true });
+    }
+  };
 
   if (loading || !settings) {
     return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-slate-400">Loading settings...</div>;
@@ -27,7 +45,7 @@ function Settings() {
           iconBg="bg-violet-500/15"
           title="Account Settings"
           description="Manage your account information"
-          onClick={() => {}}
+          onClick={() => navigate("/profile")}
         />
         <SettingsRow
           icon={FaLock}
@@ -35,7 +53,7 @@ function Settings() {
           iconBg="bg-blue-500/15"
           title="Change Password"
           description="Update your account password"
-          onClick={() => {}}
+          onClick={() => setIsPasswordOpen(true)}
         />
       </Card>
 
@@ -46,7 +64,7 @@ function Settings() {
           iconBg="bg-amber-500/15"
           title="Notifications"
           description="Receive reminders and updates"
-          right={<Toggle checked={settings.notifications} onChange={(v) => saveSettings({ notifications: v })} label="Notifications" />}
+          right={<Toggle checked={settings.notifications} onChange={(v) => savePreferences({ notifications: v })} label="Notifications" />}
         />
         <SettingsRow
           icon={FaBook}
@@ -54,7 +72,7 @@ function Settings() {
           iconBg="bg-green-500/15"
           title="Study Reminders"
           description="Get reminders for scheduled study tasks"
-          right={<Toggle checked={settings.studyReminders} onChange={(v) => saveSettings({ studyReminders: v })} label="Study Reminders" />}
+          right={<Toggle checked={settings.studyReminders} onChange={(v) => savePreferences({ studyReminders: v })} label="Study Reminders" />}
         />
         <SettingsRow
           icon={FaBullseye}
@@ -62,37 +80,18 @@ function Settings() {
           iconBg="bg-red-500/15"
           title="Goal Reminders"
           description="Get notified about upcoming goal deadlines"
-          right={<Toggle checked={settings.goalReminders} onChange={(v) => saveSettings({ goalReminders: v })} label="Goal Reminders" />}
-        />
-      </Card>
-
-      <Card hover={false} title="Appearance">
-        <SettingsRow
-          icon={FaPalette}
-          iconColor="text-purple-400"
-          iconBg="bg-purple-500/15"
-          title="Theme"
-          description="Choose your preferred theme"
-          right={<ThemeSwitcher value={settings.theme} onChange={(v) => saveSettings({ theme: v })} />}
+          right={<Toggle checked={settings.goalReminders} onChange={(v) => savePreferences({ goalReminders: v })} label="Goal Reminders" />}
         />
       </Card>
 
       <Card hover={false} title="Data & Privacy">
         <SettingsRow
-          icon={FaShieldAlt}
-          iconColor="text-blue-400"
-          iconBg="bg-blue-500/15"
-          title="Data & Privacy"
-          description="Manage your data and privacy settings"
-          onClick={() => {}}
-        />
-        <SettingsRow
           icon={FaFileExport}
           iconColor="text-green-400"
           iconBg="bg-green-500/15"
           title="Export My Data"
-          description="Download a copy of your data"
-          onClick={() => {}}
+          description="Download a copy of everything you've tracked"
+          onClick={exportData}
         />
         <SettingsRow
           icon={FaTrash}
@@ -100,10 +99,57 @@ function Settings() {
           iconBg="bg-red-500/15"
           title="Delete Account"
           description="Permanently delete your account and all data"
-          onClick={() => {}}
+          onClick={() => setIsDeleteOpen(true)}
           danger
         />
       </Card>
+
+      <Modal isOpen={isPasswordOpen} onClose={() => setIsPasswordOpen(false)} title="Change Password">
+        <ChangePasswordForm onDone={() => setIsPasswordOpen(false)} onCancel={() => setIsPasswordOpen(false)} />
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteOpen}
+        onClose={() => { setIsDeleteOpen(false); setDeleteConfirmText(""); }}
+        title="Delete Account"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-300">
+            This permanently deletes your account and every habit, DSA problem, subject,
+            goal, project, application, contest, note, and schedule task tied to it.
+            This cannot be undone.
+          </p>
+          <p className="text-sm text-slate-400">
+            Type <span className="font-semibold text-red-400">DELETE</span> to confirm.
+          </p>
+          <input
+            type="text"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-red-500"
+            placeholder="Type DELETE"
+          />
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1 justify-center"
+              onClick={() => { setIsDeleteOpen(false); setDeleteConfirmText(""); }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              className="flex-1 justify-center"
+              disabled={deleteConfirmText !== "DELETE" || deleting}
+              onClick={handleDeleteAccount}
+            >
+              {deleting ? "Deleting..." : "Delete My Account"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

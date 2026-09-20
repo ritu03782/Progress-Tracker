@@ -18,6 +18,7 @@ function DailyHabits() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null); // non-null => edit modal open
+  const [selectedDate, setSelectedDate] = useState(new Date()); // shared with DateNavigator + NotesCard
 
   const openDrawer = (habit) => { setSelectedHabit(habit); setIsDrawerOpen(true); };
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -73,7 +74,7 @@ function DailyHabits() {
         onButtonClick={() => setIsAddOpen(true)}
       />
 
-      <DateNavigator />
+      <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       <MotivationCard completed={habits.filter((h) => h.completed).length} total={habits.length} />
       <MissedTaskCard />
       <HabitGrid habits={habits} onHabitClick={openDrawer} />
@@ -87,7 +88,7 @@ function DailyHabits() {
         onDelete={handleDeleteHabit}
       />
       <ConsistencyCalendar />
-      <NotesCard />
+      <NotesCard date={selectedDate} />
 
       <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add New Habit">
         <AddHabitForm onSubmit={handleAddHabit} onCancel={() => setIsAddOpen(false)} />

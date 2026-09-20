@@ -1,11 +1,13 @@
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt, FaBars } from "react-icons/fa";
 import { getGreeting } from "../../utils/getGreeting";
 import actions from "../../config/navbarActions";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Avatar from "../common/Avatar";
 
-function Navbar() {
+// onMenuClick opens the mobile sidebar drawer (Layout.jsx owns that state).
+// The hamburger only renders below `lg`, matching Sidebar's breakpoint.
+function Navbar({ onMenuClick }) {
   const currentGreeting = getGreeting();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -18,30 +20,41 @@ function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 h-20 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-8 text-white">
+    <header className="sticky top-0 z-30 h-20 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 text-white">
 
       {/* Left Section */}
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold">
-            {currentGreeting.greeting}, {firstName}
-          </h1>
-          <span className="text-2xl">{currentGreeting.icon}</span>
-        </div>
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="lg:hidden shrink-0 w-10 h-10 rounded-full cursor-pointer bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition"
+        >
+          <FaBars className="text-lg" />
+        </button>
 
-        <p className="text-sm text-slate-400 mt-1">
-          Keep moving toward your placement goals 🚀
-        </p>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg md:text-2xl font-semibold truncate">
+              {currentGreeting.greeting}, {firstName}
+            </h1>
+            <span className="text-xl md:text-2xl shrink-0">{currentGreeting.icon}</span>
+          </div>
+
+          <p className="hidden sm:block text-sm text-slate-400 mt-1 truncate">
+            Keep moving toward your placement goals 🚀
+          </p>
+        </div>
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4 shrink-0">
         {actions.map(({ icon: Icon, label, iconColor }) => (
           <button
              key={label}
              aria-label={label}
              title={label}
-            className={`w-10 h-10 rounded-full cursor-pointer bg-slate-800 hover:bg-slate-700 hover:scale-105 transition-all duration-200 flex items-center justify-center`}
+            className={`hidden sm:flex w-10 h-10 rounded-full cursor-pointer bg-slate-800 hover:bg-slate-700 hover:scale-105 transition-all duration-200 items-center justify-center`}
           >
             <Icon className={`text-xl ${iconColor || "text-white"}`} />
           </button>

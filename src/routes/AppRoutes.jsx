@@ -1,6 +1,5 @@
 import {createBrowserRouter} from "react-router-dom";
 import Layout from "../components/layout/Layout";
-import { GoalsProvider } from "../context/GoalsContext";
 import { ProtectedRoute, PublicOnlyRoute } from "../components/layout/RouteGuards";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
@@ -34,7 +33,7 @@ const router = createBrowserRouter([
         children:[
             {
                 path:"/",
-                element:<GoalsProvider><Layout /></GoalsProvider>,
+                element:<Layout />,
                 children:[
                     {
                         index:true,

@@ -1,7 +1,14 @@
 import { FaArrowRight } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
+import { useNavigate } from "react-router-dom";
 
+// "Explore Dashboard" was removed — this banner only ever renders on the
+// Dashboard itself, so it had nowhere real to go. "View Roadmap" pointed
+// at a page that doesn't exist anywhere in the app; repurposed as a real,
+// working link to Goals, which is the closest actual concept to a roadmap.
 function WelcomeBanner() {
+  const navigate = useNavigate();
+
   return (
     <section
       className="
@@ -53,6 +60,7 @@ function WelcomeBanner() {
         <div className="mt-6 flex flex-wrap gap-4">
 
           <button
+            onClick={() => navigate("/goals")}
             className="
             flex
             items-center
@@ -71,26 +79,8 @@ function WelcomeBanner() {
             cursor-pointer
             "
           >
-            Explore Dashboard
+            View Goals
             <FaArrowRight className="text-sm" />
-          </button>
-
-          <button
-            className="
-            rounded-xl
-            border
-            border-white/30
-            px-5
-            py-2.5
-            text-white
-            backdrop-blur
-            transition-all
-            duration-300
-            hover:bg-white/10
-            cursor-pointer
-            "
-          >
-            View Roadmap
           </button>
 
         </div>

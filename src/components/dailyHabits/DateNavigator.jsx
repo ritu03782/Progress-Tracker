@@ -12,8 +12,11 @@ import {
 
 import Button from "../common/Button";
 
-function DateNavigator() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+// Now a controlled component — selectedDate/onDateChange are lifted up to
+// DailyHabits.jsx so other things on the page (like NotesCard) can share
+// the same "which day am I looking at" state instead of each keeping its
+// own disconnected copy.
+function DateNavigator({ selectedDate, onDateChange }) {
   const [showCalendar, setShowCalendar] = useState(false);
 
   const calendarRef = useRef(null);
@@ -68,7 +71,7 @@ function DateNavigator() {
           variant="secondary"
           className="w-12 h-12 p-0"
           onClick={() =>
-            setSelectedDate(subDays(selectedDate, 1))
+            onDateChange(subDays(selectedDate, 1))
           }
         >
           <FaChevronLeft />
@@ -118,7 +121,7 @@ function DateNavigator() {
           className="w-12 h-12 p-0"
           disabled={isToday(selectedDate)}
           onClick={() =>
-            setSelectedDate(addDays(selectedDate, 1))
+            onDateChange(addDays(selectedDate, 1))
           }
         >
           <FaChevronRight />
@@ -151,7 +154,7 @@ function DateNavigator() {
               onSelect={(date) => {
                 if (!date) return;
 
-                setSelectedDate(date);
+                onDateChange(date);
                 setShowCalendar(false);
               }}
               disabled={{

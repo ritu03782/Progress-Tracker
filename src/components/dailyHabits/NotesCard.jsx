@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { isToday, formatDistanceToNow } from "date-fns";
 import {
   FaRegStickyNote,
   FaSave,
@@ -6,6 +7,7 @@ import {
 
 import Card from "../common/Card";
 import Button from "../common/Button";
+import useNote from "../../hooks/useNote";
 
 const moods = [
   "😁",
@@ -15,13 +17,29 @@ const moods = [
   "😴",
 ];
 
-function NotesCard() {
-  const [notes, setNotes] = useState(
-    "• Solve today's DSA problem.\n• Revise React Router.\n• Drink at least 3L water."
-  );
+// Notes are per-day now, tied to whichever date is selected in
+// DateNavigator — not a single eternal note. Editing a past day's note is
+// allowed (same as browsing to a past day should let you see/fix what you
+// wrote then).
+function NotesCard({ date }) {
+  const { note, loading, saving, save } = useNote(date);
+  const [text, setText] = useState("");
+  const [selectedMood, setSelectedMood] = useState("");
 
-  const [selectedMood, setSelectedMood] =
-    useState("😊");
+  // Sync local draft whenever the fetched note changes (new date navigated
+  // to, or right after a save completes).
+  useEffect(() => {
+    if (note) {
+      setText(note.text || "");
+      setSelectedMood(note.mood || "");
+    }
+  }, [note]);
+
+  const handleSave = () => {
+    save({ text, mood: selectedMood });
+  };
+
+  const viewingToday = isToday(date);
 
   return (
     <Card
@@ -71,11 +89,11 @@ function NotesCard() {
             <div>
 
               <h3 className="text-white font-semibold">
-                Today's Notes
+                {viewingToday ? "Today's Notes" : "Notes for this day"}
               </h3>
 
               <p className="text-xs text-slate-500">
-                Auto saves when backend is connected
+                {loading ? "Loading..." : "Saved to your account"}
               </p>
 
             </div>
@@ -85,9 +103,11 @@ function NotesCard() {
           <Button
             variant="secondary"
             className="px-4"
+            onClick={handleSave}
+            disabled={loading || saving}
           >
             <FaSave />
-            Save
+            {saving ? "Saving..." : "Save"}
           </Button>
 
         </div>
@@ -99,11 +119,11 @@ function NotesCard() {
           <div className="flex justify-between items-center mb-3">
 
             <span className="text-sm font-medium text-slate-300">
-              How are you feeling today?
+              {viewingToday ? "How are you feeling today?" : "How were you feeling?"}
             </span>
 
             <span className="text-xs text-slate-500">
-              Daily Mood
+              Mood
             </span>
 
           </div>
@@ -147,11 +167,11 @@ function NotesCard() {
         {/* Textarea */}
 
         <textarea
-          value={notes}
+          value={text}
           onChange={(e) =>
-            setNotes(e.target.value)
+            setText(e.target.value)
           }
-          placeholder="Write today's notes..."
+          placeholder={viewingToday ? "Write today's notes..." : "Write notes for this day..."}
           className="
             w-full
             h-56
@@ -196,17 +216,19 @@ function NotesCard() {
             </span>
 
             <span className="text-lg">
-              {selectedMood}
+              {selectedMood || "—"}
             </span>
 
           </div>
 
           <span className="text-xs text-slate-500">
-            {notes.length} characters
+            {text.length} characters
           </span>
 
           <span className="text-xs text-slate-500">
-            Last edited: Just now
+            {note?.updatedAt
+              ? `Last edited: ${formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}`
+              : "Not saved yet"}
           </span>
 
         </div>

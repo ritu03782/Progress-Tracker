@@ -1,25 +1,13 @@
-import recentActivityData from "../../config/recentActivitiesData";
 import Card from "../common/Card";
 
-function RecentActivity() {
+// No "View All" button here — there's no fuller activity-log page in the
+// app for it to link to, so it would have had nowhere real to go.
+function RecentActivity({ activities = [] }) {
   return (
         <Card
         title="🕒 Recent Activity"
         subtitle="Latest updates from your preparation journey."
         className="hover:border-blue-500/30"
-        action={
-          <button
-            className="
-            text-sm
-            text-blue-400
-            hover:text-blue-300
-            transition
-            cursor-pointer
-            "
-          >
-            View All
-          </button>
-        }
         footer={
           <p className="text-sm text-slate-400">
             📌 Every completed task brings you one step closer to your placement goal.
@@ -28,7 +16,13 @@ function RecentActivity() {
       >
       <div className="space-y-4">
 
-        {recentActivityData.map((activity) => {
+        {activities.length === 0 && (
+          <p className="py-6 text-center text-sm text-slate-500">
+            Nothing here yet — complete a habit, solve a problem, or check off a task to see it show up.
+          </p>
+        )}
+
+        {activities.map((activity) => {
           const Icon = activity.icon;
 
           return (

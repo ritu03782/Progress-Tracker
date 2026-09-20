@@ -1,19 +1,39 @@
-import todayScheduleData from "../config/todayScheduleData";
+import request from "./apiClient";
 
-let _schedule = todayScheduleData;
-const simulateLatency = (data) => new Promise((resolve) => setTimeout(() => resolve(data), 150));
+const PRIORITY_COLORS = {
+  High: "bg-red-500",
+  Medium: "bg-yellow-500",
+  Low: "bg-green-500",
+};
+
+// priorityColor is pure display derivation from `priority` — computed
+// here, never stored, same adapter pattern as every other tracker.
+function shapeTask(task) {
+  return {
+    ...task,
+    priorityColor: PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.Medium,
+  };
+}
 
 export async function getTodaySchedule() {
-  return simulateLatency(_schedule);
+  const tasks = await request("/v1/schedule", { method: "GET" });
+  return tasks.map(shapeTask);
+}
+
+// options: { time?, priority?, linkedGoalId?, linkedGoalType?, linkedMilestoneId?, linkedAmount? }
+export async function createScheduleTask({ title, time, priority, linkedGoalId, linkedGoalType, linkedMilestoneId, linkedAmount }) {
+  const task = await request("/v1/schedule", {
+    method: "POST",
+    body: { title, time, priority, linkedGoalId, linkedGoalType, linkedMilestoneId, linkedAmount },
+  });
+  return shapeTask(task);
 }
 
 export async function toggleScheduleTask(taskId) {
-  _schedule = _schedule.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
-  return simulateLatency(_schedule);
+  const task = await request(`/v1/schedule/${taskId}/toggle`, { method: "PATCH" });
+  return shapeTask(task);
 }
 
-export async function createScheduleTask(newTask) {
-  // Later: const res = await fetch("/api/schedule", { method: "POST", body: JSON.stringify(newTask) });
-  _schedule = [..._schedule, newTask];
-  return simulateLatency(_schedule);
+export async function deleteScheduleTask(taskId) {
+  return request(`/v1/schedule/${taskId}`, { method: "DELETE" });
 }

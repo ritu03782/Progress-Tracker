@@ -1,10 +1,12 @@
-import { useState } from "react";
-import progressData from "../../config/progressData";
 import Card from "../common/Card";
 import ProgressRing from "../common/ProgressRing";
+import { getOverallStats, getSubjectProgress } from "../../utils/subjectStats";
 
-function ProgressChart() {
-  const [view, setView] = useState("Week");
+// The Week/Month/Year view selector from the original mock is gone — it
+// had state but nothing behind it (no historical progress snapshots exist
+// to switch between), so it was a decorative control that did nothing.
+function ProgressChart({ subjects }) {
+  const { overallProgress } = getOverallStats(subjects);
 
   return (
     <Card
@@ -18,58 +20,32 @@ function ProgressChart() {
         </p>
       }
       action={
-        <div className="flex items-center gap-3">
-          <span
-            className="
-              px-4
-              py-1.5
-              rounded-full
-              bg-blue-500/15
-              border
-              border-blue-500/30
-              text-blue-400
-              text-sm
-              font-medium
-            "
-          >
-            {progressData.overall}% Overall
-          </span>
-
-          <select
-            value={view}
-            onChange={(e) => setView(e.target.value)}
-            className="
-              bg-slate-800
-              border
-              border-slate-700
-              rounded-lg
-              px-3
-              py-2
-              text-sm
-              text-slate-300
-              outline-none
-              hover:border-blue-500
-              focus:border-blue-500
-              transition
-              cursor-pointer
-            "
-          >
-            <option>Week</option>
-            <option>Month</option>
-            <option>Year</option>
-          </select>
-        </div>
+        <span
+          className="
+            px-4
+            py-1.5
+            rounded-full
+            bg-blue-500/15
+            border
+            border-blue-500/30
+            text-blue-400
+            text-sm
+            font-medium
+          "
+        >
+          {overallProgress}% Overall
+        </span>
       }
     >
       {/* Left */}
       <ProgressRing
-        value={progressData.overall}
+        value={overallProgress}
         color="#3B82F6"
         className="w-56 h-56 xl:w-60 xl:h-60 flex-shrink:0"
       >
         <div className="flex flex-col items-center justify-center">
           <h2 className="text-5xl font-bold text-white">
-            {progressData.overall}%
+            {overallProgress}%
           </h2>
 
           <p className="text-slate-400 mt-1">Overall Progress</p>
@@ -92,37 +68,46 @@ function ProgressChart() {
 
       {/* Right */}
       <div className="flex-1 w-full">
-        <div className="space-y-5">
-          {progressData.subjects.map((subject) => (
-            <div key={subject.name}>
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: subject.color }}
-                  />
-                  <span className="text-slate-200 font-medium">
-                    {subject.name}
-                  </span>
+        {subjects.length === 0 ? (
+          <p className="text-sm text-slate-500 text-center py-6">
+            Add a subject to see its progress here.
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {subjects.map((subject) => {
+              const progress = getSubjectProgress(subject);
+              return (
+                <div key={subject.id}>
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: subject.hex }}
+                      />
+                      <span className="text-slate-200 font-medium">
+                        {subject.name}
+                      </span>
+                    </div>
+
+                    <span className="font-semibold" style={{ color: subject.hex }}>
+                      {progress}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-1000 hover:brightness-125"
+                      style={{
+                        width: `${progress}%`,
+                        background: `linear-gradient(90deg, ${subject.hex}, #60A5FA)`,
+                      }}
+                    />
+                  </div>
                 </div>
-
-                <span className="font-semibold" style={{ color: subject.color }}>
-                  {subject.progress}%
-                </span>
-              </div>
-
-              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-1000 hover:brightness-125"
-                  style={{
-                    width: `${subject.progress}%`,
-                    background: `linear-gradient(90deg, ${subject.color}, #60A5FA)`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </Card>
   );

@@ -1,13 +1,13 @@
-import settingsData from "../config/settingsData";
+import request from "./apiClient";
 
-let _settings = settingsData;
-const simulateLatency = (data) => new Promise((resolve) => setTimeout(() => resolve(data), 150));
-
-export async function getSettings() {
-  return simulateLatency(_settings);
+export async function updatePreferences(updates) {
+  return request("/v1/users/preferences", { method: "PATCH", body: updates });
 }
 
-export async function updateSettings(updates) {
-  _settings = { ..._settings, ...updates };
-  return simulateLatency(_settings);
+export async function exportUserData() {
+  return request("/v1/settings/export-data", { method: "GET" });
+}
+
+export async function deleteAccount() {
+  return request("/v1/settings/account", { method: "DELETE" });
 }

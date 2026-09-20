@@ -8,10 +8,9 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import weeklyActivityData from "../../config/weeklyActivityData";
 import Card from "../common/Card";
 
-function WeeklyActivity() {
+function WeeklyActivity({ data }) {
   return (
         <Card
         title="📈 Weekly DSA Activity"
@@ -33,7 +32,7 @@ function WeeklyActivity() {
         <ResponsiveContainer width="100%" height="100%">
 
           <LineChart
-            data={weeklyActivityData}
+            data={data}
             margin={{
               top: 10,
               right: 10,

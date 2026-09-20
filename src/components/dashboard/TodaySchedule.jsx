@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTimes } from "react-icons/fa";
 import Card from "../common/Card";
 import useTodaySchedule from "../../hooks/useTodaySchedule";
 import { useGoalsContext } from "../../context/GoalsContext";
 
 function TodaySchedule() {
-  const { tasks, toggleTask, addTask } = useTodaySchedule();
+  const { tasks, toggleTask, addTask, removeTask } = useTodaySchedule();
   const { goals } = useGoalsContext();
   const doneCount = tasks.filter((t) => t.completed).length;
 
@@ -32,14 +32,9 @@ function TodaySchedule() {
       subtitle="Stay on track with today's planned tasks."
       className="hover:border-blue-500/30"
       action={
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-green-400">
-            {doneCount} / {tasks.length} Done
-          </span>
-          <button className="text-sm text-blue-400 hover:text-blue-300 transition cursor-pointer">
-            View All
-          </button>
-        </div>
+        <span className="text-sm font-medium text-green-400">
+          {doneCount} / {tasks.length} Done
+        </span>
       }
       footer={
         <p className="text-sm text-slate-400">
@@ -75,12 +70,22 @@ function TodaySchedule() {
               </div>
             </div>
 
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => toggleTask(task)}
-              className="w-5 h-5 accent-blue-500 cursor-pointer"
-            />
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => toggleTask(task)}
+                className="w-5 h-5 accent-blue-500 cursor-pointer"
+              />
+              <button
+                type="button"
+                onClick={() => removeTask(task.id)}
+                aria-label="Delete task"
+                className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition cursor-pointer"
+              >
+                <FaTimes className="text-xs" />
+              </button>
+            </div>
           </div>
         ))}
         {/* Add task form */}
