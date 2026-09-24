@@ -1,152 +1,185 @@
-# React + Vite
 # Progress Tracker
 
-Progress Tracker is a personal productivity and placement-preparation web application built using React, Tailwind CSS, and Vite.
-
-The application is designed to help students organize and track their DSA preparation, subjects, daily habits, goals, projects, job applications, and coding contests from a single platform.
-
-> Project Status: Frontend development is currently in progress. Backend and API integration are planned for the next phase.
+A full-stack MERN application designed to help students and learners manage their preparation journey in one place. The platform enables users to track DSA progress, subjects, habits, goals, contests, projects, and job applications through an interactive dashboard.
 
 ## Features
 
+### Authentication & User Management
+
+* Secure JWT-based Authentication
+* Access Token & Refresh Token implementation
+* Protected Routes
+* User Profile Management
+* Avatar Upload using Cloudinary
+
 ### Dashboard
 
-- Overall progress overview
-- Today's schedule
-- Weekly activity
-- Recent activity
-- Progress statistics
-- Quick overview of important tasks
+* Centralized progress overview
+* Learning analytics and insights
+* Recent activity tracking
+* Performance visualization using Recharts
+* Quick access to all modules
 
-### DSA Tracker
+### Goal Management
 
-- Track solved DSA problems
-- Filter problems by difficulty, status, platform, and topic
-- Favourite questions
-- Topic-wise progress
-- Weak topic identification
-- Revision queue
-- Platform statistics
-
-### Subject Tracker
-
-- Track academic subjects
-- Topic-wise completion
-- Overall subject progress
-- Study hours
-- Weak topics
-- Study notes
-- Learning resources
-- Subject details through an interactive side panel
+* Create, update, and delete goals
+* Track goal progress
+* Monitor personal and academic targets
 
 ### Daily Habits
 
-- Create and manage habits
-- Mark habits as completed
-- Track daily consistency
-- Track habit streaks
-- View habit completion statistics
-- Yearly consistency heatmap
-- Daily notes and reflections
+* Manage daily habits
+* Track consistency and productivity
+* Monitor habit completion progress
 
-### Goals
+### DSA Tracker
 
-- Create and manage long-term goals
-- Track goal progress
-- Associate scheduled tasks with goals
-- View active and completed goals
-- View detailed goal information through a side panel
+* Record coding practice progress
+* Track solved problems
+* Monitor placement preparation
 
-### Project Tracker
+### Subject Tracker
 
-- Track personal and academic projects
-- Project progress
-- Project tasks
-- Project status
-- Technology stack
-- GitHub repository links
-- Project notes
-- Project details through an interactive side panel
+* Manage academic subjects
+* Track study progress
+* Organize learning activities
 
-### Applications
+### Contest Tracker
 
-- Track job and internship applications
-- Monitor application status
-- Organize companies and roles
-- Track application progress
+* Maintain contest records
+* Store contest performance details
+* Analyze competitive programming progress
 
-### Contests
+### Application Tracker
 
-- Track coding contests
-- Organize upcoming and completed contests
-- Monitor contest participation
+* Track job and internship applications
+* Manage application status
+* Monitor placement journey
 
 ## Tech Stack
 
 ### Frontend
 
-- React.js
-- JavaScript
-- Vite
-- Tailwind CSS
-- React Router DOM
+* React.js
+* Vite
+* Tailwind CSS
+* React Router
+* Axios
+* Recharts
 
-### Libraries
+### Backend
 
-- React Icons
-- Recharts
-- date-fns
+* Node.js
+* Express.js
+* JWT Authentication
+* REST APIs
 
-### Current Data Storage
+### Database
 
-- Local Storage
+* MongoDB Atlas
+* Mongoose
 
-### Planned
+### Cloud Services
 
-- Backend API
-- Database
-- User authentication
-- Cloud data storage
+* Cloudinary
 
 ## Project Structure
 
-```text
-src/
-│
-├── assets/
-│
-├── components/
-│   ├── common/
-│   │   ├── Button.jsx
-│   │   ├── Card.jsx
-│   │   ├── Header.jsx
-│   │   └── ProgressBar.jsx
-│   │
-│   ├── dsa/
-│   ├── habits/
-│   ├── subjects/
-│   ├── goals/
-│   ├── projects/
-│   ├── applications/
-│   └── contests/
-│
-├── config/
-│
-├── pages/
-│   ├── Dashboard.jsx
-│   ├── DailyHabits.jsx
-│   ├── DsaTracker.jsx
-│   ├── Subjects.jsx
-│   ├── Goals.jsx
-│   ├── Projects.jsx
-│   ├── Applications.jsx
-│   └── Contests.jsx
-│
-├── services/
-│   └── habitService.js
-│
-├── utils/
-│
-├── App.jsx
-├── main.jsx
-└── index.css
+```bash
+Frontend
+├── Components
+├── Pages
+├── Context
+├── Hooks
+├── Services
+└── Utilities
+
+Backend
+├── Routes
+├── Controllers
+├── Models
+├── Middleware
+├── Utils
+└── Config
+```
+
+## Key Functionalities
+
+* Full-stack MERN architecture
+* RESTful API integration
+* JWT Authentication & Authorization
+* MongoDB schema design and data management
+* Responsive UI for multiple screen sizes
+* Reusable React components
+* Cloudinary image management
+* Analytics dashboard with charts and progress tracking
+
+## Installation
+
+### Clone Repository
+
+```bash
+git clone https://github.com/ritu03782/Progress-Tracker.git
+```
+
+### Frontend Setup
+
+```bash
+cd Progress_Tracker
+npm install
+npm run dev
+```
+
+### Backend Setup
+
+```bash
+cd Progress_Backend
+npm install
+npm run dev
+```
+
+### Environment Variables
+
+Create a `.env` file and configure:
+
+```env
+PORT=
+MONGODB_URI=
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
+
+## Future Enhancements
+
+* Global Search
+* Pagination & View More
+* Activity Feed Automation
+* Consistency Calendar
+* Smart Notifications
+* AI-Powered Daily Schedule Generator using Google Gemini
+* Advanced Analytics
+
+## Learning Outcomes
+
+Through this project, I gained hands-on experience in:
+
+* Full Stack MERN Development
+* Authentication & Authorization
+* REST API Design
+* MongoDB Schema Design
+* State Management
+* Responsive UI Development
+* Cloud Integration
+* Deployment & Production Readiness
+
+## Author
+
+**Ritu Singh**
+
+B.Tech CSE | IET Lucknow
+
+GitHub: https://github.com/ritu03782
+
