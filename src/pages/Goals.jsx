@@ -10,6 +10,9 @@ import AddGoalForm from "../components/goals/AddGoalForm";
 import { useGoalsContext } from "../context/GoalsContext";
 import { getGoalsSummary, getGoalStatus } from "../utils/goalStats";
 
+// How many Active Goals are shown before "View More" is needed.
+const PAGE_SIZE = 5;
+
 function Goals() {
   const { goals, completedGoals, loading, toggleGoalMilestone, bumpGoalCounter, addGoal, editGoal, removeGoal } = useGoalsContext();
   const [selectedGoalId, setSelectedGoalId] = useState(null);
@@ -17,6 +20,7 @@ function Goals() {
   const [filter, setFilter] = useState("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null); // non-null => edit modal open
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE); // "View More" reveal count
 
   const allGoals = useMemo(() => [...goals, ...completedGoals], [goals, completedGoals]);
   const selectedGoal = allGoals.find((g) => g.id === selectedGoalId) || null;
@@ -26,6 +30,16 @@ function Goals() {
     () => (filter === "all" ? goals : goals.filter((g) => getGoalStatus(g) === filter)),
     [goals, filter]
   );
+
+  // Reset the reveal count whenever the filter changes, so switching from
+  // (say) "All" to "Overdue" doesn't carry over a stale "showing 15" from
+  // a completely different filtered list.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filter]);
+
+  const visibleGoals = useMemo(() => filteredGoals.slice(0, visibleCount), [filteredGoals, visibleCount]);
+  const remainingCount = filteredGoals.length - visibleGoals.length;
 
   const openDrawer = (goal) => { setSelectedGoalId(goal.id); setIsDrawerOpen(true); };
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -92,7 +106,23 @@ function Goals() {
           </select>
         </div>
 
-        <GoalsList goals={filteredGoals} onView={openDrawer} />
+        <GoalsList goals={visibleGoals} onView={openDrawer} />
+
+        {remainingCount > 0 && (
+          <div className="flex justify-center mt-4">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              className="
+                px-5 py-2 rounded-lg bg-slate-800 border border-slate-700
+                text-sm font-medium text-slate-300
+                hover:border-blue-500 hover:text-white transition cursor-pointer
+              "
+            >
+              View More ({remainingCount} remaining)
+            </button>
+          </div>
+        )}
       </div>
 
       <CompletedGoals goals={completedGoals} />

@@ -4,6 +4,7 @@ import actions from "../../config/navbarActions";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Avatar from "../common/Avatar";
+import NotificationBell from "./NotificationBell";
 
 // onMenuClick opens the mobile sidebar drawer (Layout.jsx owns that state).
 // The hamburger only renders below `lg`, matching Sidebar's breakpoint.
@@ -59,6 +60,8 @@ function Navbar({ onMenuClick }) {
             <Icon className={`text-xl ${iconColor || "text-white"}`} />
           </button>
         ))}
+
+        <NotificationBell />
 
         {/* Profile avatar — navigates to /profile, shows real avatar or initials */}
         <button
